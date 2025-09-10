@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+input, textarea {
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+}
+
+button {
+  padding: 8px 12px;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.duvida {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.resposta {
+  margin-left: 20px;
+  border-left: 2px solid #aaa;
+  padding-left: 10px;
+  margin-top: 5px;
+}

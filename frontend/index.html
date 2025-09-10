@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma de Dúvidas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Plataforma de Dúvidas</h1>
+
+  <div id="form-duvida">
+    <h2>Postar Dúvida</h2>
+    <input type="text" id="titulo" placeholder="Título">
+    <input type="text" id="autor" placeholder="Seu nome">
+    <textarea id="descricao" placeholder="Descrição"></textarea>
+    <button onclick="enviarDuvida()">Enviar Dúvida</button>
+  </div>
+
+  <h2>Dúvidas</h2>
+  <div id="duvidas"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
