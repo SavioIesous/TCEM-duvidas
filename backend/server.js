@@ -7,11 +7,31 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conectar no MongoDB (cole aqui seu link do Atlas)
-mongoose.connect("mongodb+srv://rodriguessavio68_db_user:savio497@cluster0.zwvuyto.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+import path from "path";
+import { fileURLToPath } from "url";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+
+
+mongoose.connect("mongodb+srv://rodriguessavio68_db_user:savio497@cluster0.zwvuyto.mongodb.net/duvidasDB?retryWrites=true&w=majority&appName=Cluster0")
   .then(() => console.log("MongoDB conectado"))
   .catch(err => console.log(err));
 
 app.use("/duvidas", duvidasRoutes);
 
-app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+
+app.get("/", (req, res) => {
+  res.send("Servidor está rodando 🚀");
+});
+
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});

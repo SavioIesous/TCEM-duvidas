@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 const router = express.Router();
 
-// Modelo de dúvida
+
 const duvidaSchema = new mongoose.Schema({
   titulo: String,
   descricao: String,
@@ -13,20 +13,20 @@ const duvidaSchema = new mongoose.Schema({
 
 const Duvida = mongoose.model("Duvida", duvidaSchema);
 
-// Listar dúvidas
+
 router.get("/", async (req, res) => {
   const duvidas = await Duvida.find();
   res.json(duvidas);
 });
 
-// Postar dúvida
+
 router.post("/", async (req, res) => {
   const novaDuvida = new Duvida(req.body);
   await novaDuvida.save();
   res.json(novaDuvida);
 });
 
-// Postar resposta
+
 router.post("/:id/resposta", async (req, res) => {
   const duvida = await Duvida.findById(req.params.id);
   duvida.respostas.push(req.body);

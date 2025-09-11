@@ -59,5 +59,5 @@ async function enviarResposta(id) {
   carregarDuvidas();
 }
 
-// Carregar dúvidas ao abrir a página
+
 carregarDuvidas();
