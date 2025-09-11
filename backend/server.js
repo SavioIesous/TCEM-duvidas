@@ -26,6 +26,18 @@ mongoose.connect("mongodb+srv://rodriguessavio68_db_user:savio497@cluster0.zwvuy
 app.use("/duvidas", duvidasRoutes);
 
 
+// Middleware
+app.use(express.json());
+
+// Servir frontend
+app.use(express.static("public"));
+
+// Rotas do backend
+app.get("/api", (req, res) => {
+  res.json({ message: "Backend funcionando!" });
+});
+
+
 app.get("/", (req, res) => {
   res.send("Servidor está rodando 🚀");
 });
