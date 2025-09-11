@@ -1,8 +1,9 @@
-const API_URL = "https://tcem-duvidas-backend.onrender.com";
+const API_URL = "https://tcem-duvidas-backend.onrender.com/duvidas";
 
 async function carregarDuvidas() {
   try {
     const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Erro ao acessar o servidor");
     const duvidas = await res.json();
 
     const div = document.getElementById("duvidas");
