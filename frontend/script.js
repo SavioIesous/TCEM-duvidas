@@ -1,4 +1,4 @@
-const API_URL = "https://tcem-duvidas-backend.onrender.com/duvidas";
+const API_URL = "https://tcem-duvidas-backend.onrender.com";
 
 async function carregarDuvidas() {
   const res = await fetch(API_URL);
