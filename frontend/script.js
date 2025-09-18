@@ -287,11 +287,11 @@ async function validarToken(token) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('token');
-  if (!token || !(await validarToken(token))) {
-    localStorage.removeItem('token');
-    window.location.href = 'index.html';
-    return;
-  }
+  // if (!token || !(await validarToken(token))) {
+  //   localStorage.removeItem('token');
+  //   window.location.href = 'index.html';
+  //   return;
+  // }
 
   document.getElementById('btnLogout').addEventListener('click', logout);
   document.getElementById('btnEnviar').addEventListener('click', enviarDuvida);

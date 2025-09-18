@@ -5,7 +5,7 @@ import User from "../models/user.js";
 
 const router = express.Router();
 
-// Cadastro
+// ================== CADASTRO =================
 router.post("/register", async (req, res) => {
   const { email, senha } = req.body;
 
@@ -19,7 +19,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login
+// ================== LOGIN =================
 router.post("/login", async (req, res) => {
   const { email, senha } = req.body;
 
@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
   res.json({ message: "Login bem-sucedido!", token });
 });
 
-// Perfil protegido
+// ================== PERFIL PROTEGIDO =================
 router.get("/perfil", async (req, res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -42,13 +42,28 @@ router.get("/perfil", async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, "segredo123");
-    const user = await User.findById(decoded.id).select("-senha"); // não mostrar a senha
+    const user = await User.findById(decoded.id).select("-senha");
     res.json({ id: user._id, email: user.email });
   } catch (err) {
     res.status(401).json({ error: "Token inválido ou expirado!" });
   }
 });
 
+// ================== VALIDAÇÃO DE TOKEN =================
+router.get("/validate", (req, res) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Token ausente" });
+
+  try {
+    jwt.verify(token, "segredo123");
+    res.sendStatus(200); // token válido
+  } catch (err) {
+    res.status(401).json({ error: "Token inválido" });
+  }
+});
+
+// ================== MIDDLEWARE =================
 export function verifyToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -56,12 +71,11 @@ export function verifyToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, "segredo123");
-    req.user = decoded; // { id: ... }
+    req.user = decoded;
     next();
   } catch (err) {
     return res.status(401).json({ error: "Token inválido" });
   }
 }
-
 
 export default router;
