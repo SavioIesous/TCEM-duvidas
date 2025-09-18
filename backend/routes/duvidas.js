@@ -1,11 +1,14 @@
+// backend/routes/duvidas.js
 import express from "express";
 import mongoose from "mongoose";
+import { verifyToken } from "./auth.js"; // <- importar o middleware
 
 const router = express.Router();
 
 const replySchema = new mongoose.Schema({
   text: { type: String, required: true },
   author: { type: String, default: "Anônimo" },
+  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -13,42 +16,100 @@ const duvidaSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   author: { type: String, default: "Anônimo" },
+  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: Date, default: Date.now },
   replies: [replySchema]
 });
 
 const Duvida = mongoose.model("Duvida", duvidaSchema);
 
+// Listar dúvidas
 router.get("/", async (req, res) => {
-  const duvidas = await Duvida.find();
-  res.json(duvidas);
+  try {
+    const duvidas = await Duvida.find();
+    res.json(duvidas);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar dúvidas" });
+  }
 });
 
-router.post("/", async (req, res) => {
-  const novaDuvida = new Duvida(req.body);
-  await novaDuvida.save();
-  res.json(novaDuvida);
+// Criar dúvida (autenticado)
+router.post("/", verifyToken, async (req, res) => {
+  try {
+    const { title, description, author } = req.body;
+    const novaDuvida = new Duvida({
+      title,
+      description,
+      author: author || "Anônimo",
+      authorId: req.user.id
+    });
+    await novaDuvida.save();
+    res.status(201).json(novaDuvida);
+  } catch (err) {
+    res.status(400).json({ error: "Erro ao criar dúvida" });
+  }
 });
 
-// rota de respostas
-router.post("/:id/respostas", async (req, res) => {
-  const duvida = await Duvida.findById(req.params.id);
-  if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
+// Adicionar resposta (autenticado)
+router.post("/:id/respostas", verifyToken, async (req, res) => {
+  try {
+    const duvida = await Duvida.findById(req.params.id);
+    if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
 
-  const { author, text } = req.body;
-  const reply = { author: author || "Anônimo", text, createdAt: new Date() };
-  duvida.replies.push(reply);
-  await duvida.save();
+    const { text, author } = req.body;
+    const reply = {
+      text,
+      author: author || "Anônimo",
+      authorId: req.user.id,
+      createdAt: new Date()
+    };
 
-  res.status(201).json(reply);
+    duvida.replies.push(reply);
+    await duvida.save();
+
+    res.status(201).json(reply);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao adicionar resposta" });
+  }
 });
 
-router.post("/", async (req, res) => {
-  console.log("Recebi no backend:", req.body); // <--- veja o que vem
-  const novaDuvida = new Duvida(req.body);
-  await novaDuvida.save();
-  res.json(novaDuvida);
+// Deletar dúvida (só autor)
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const duvida = await Duvida.findById(req.params.id);
+    if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
+
+    if (!duvida.authorId || duvida.authorId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Você não tem permissão para excluir esta dúvida" });
+    }
+
+    await duvida.deleteOne();
+    res.json({ message: "Dúvida excluída com sucesso" });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao excluir dúvida" });
+  }
 });
 
+// Deletar resposta (só autor da resposta)
+router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
+  try {
+    const duvida = await Duvida.findById(req.params.id);
+    if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
+
+    const resposta = duvida.replies.id(req.params.replyId);
+    if (!resposta) return res.status(404).json({ error: "Resposta não encontrada" });
+
+    if (!resposta.authorId || resposta.authorId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Você não tem permissão para excluir esta resposta" });
+    }
+
+    resposta.remove();
+    await duvida.save();
+
+    res.json({ message: "Resposta excluída com sucesso" });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao excluir resposta" });
+  }
+});
 
 export default router;

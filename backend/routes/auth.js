@@ -49,5 +49,19 @@ router.get("/perfil", async (req, res) => {
   }
 });
 
+export function verifyToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Token ausente" });
+
+  try {
+    const decoded = jwt.verify(token, "segredo123");
+    req.user = decoded; // { id: ... }
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Token inválido" });
+  }
+}
+
 
 export default router;
