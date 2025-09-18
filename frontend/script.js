@@ -274,20 +274,27 @@ async function enviarDuvida() {
 }
 
 // ---------- INICIALIZAÇÃO ----------
-document.addEventListener("DOMContentLoaded", () => {
-  // proteção de rota: só home com token
-  const token = localStorage.getItem("token");
-  if (!token) {
-    // se não tiver token, redireciona ao login
-    window.location.href = "index.html";
+async function validarToken(token) {
+  try {
+    const res = await fetch(`${API}/auth/validate`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  if (!token || !(await validarToken(token))) {
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
     return;
   }
 
-  // hooks
-  document.getElementById("btnLogout").addEventListener("click", logout);
-  document.getElementById("btnEnviar").addEventListener("click", enviarDuvida);
-
-  // carrega
+  document.getElementById('btnLogout').addEventListener('click', logout);
+  document.getElementById('btnEnviar').addEventListener('click', enviarDuvida);
   carregarDuvidas();
 });
 
