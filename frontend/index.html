@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plataforma de Dúvidas</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login e Cadastro</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Plataforma de Dúvidas</h1>
+  <main class="container">
+    <h1>Plataforma - Login / Cadastro</h1>
 
-  <div id="form-duvida">
-    <h2>Postar Dúvida</h2>
-    <input type="text" id="titulo" placeholder="Título">
-    <input type="text" id="autor" placeholder="Seu nome">
-    <textarea id="descricao" placeholder="Descrição"></textarea>
-    <button onclick="enviarDuvida()">Enviar Dúvida</button>
-  </div>
+    <section class="card">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input id="loginEmail" type="email" placeholder="Email" required />
+        <input id="loginPassword" type="password" placeholder="Senha" required />
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
 
-  <h2>Dúvidas</h2>
-  <div id="duvidas"></div>
+    <section class="card">
+      <h2>Cadastro</h2>
+      <form id="registerForm">
+        <input id="registerName" type="text" placeholder="Nome (opcional)" />
+        <input id="registerEmail" type="email" placeholder="Email" required />
+        <input id="registerPassword" type="password" placeholder="Senha" required />
+        <button type="submit">Cadastrar</button>
+      </form>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>

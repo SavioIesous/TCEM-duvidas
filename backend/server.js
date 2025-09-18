@@ -29,6 +29,12 @@ app.get("/api", (req, res) => {
   res.json({ message: "Backend funcionando!" });
 });
 
+import authRoutes from "./routes/auth.js";
+
+// ... depois do app.use(express.json());
+app.use("/auth", authRoutes);
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
