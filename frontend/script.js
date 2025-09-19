@@ -20,13 +20,8 @@ function getField(obj, ...keys) {
 }
 
 function safeJson(res) {
-  // tenta retornar JSON, se não conseguir devolve null
   return res.text().then((t) => {
-    try {
-      return JSON.parse(t || "{}");
-    } catch {
-      return null;
-    }
+    try { return JSON.parse(t || "{}"); } catch { return null; }
   });
 }
 
@@ -53,30 +48,23 @@ window.logout = logout;
 
 // ---------- RENDER DÚVIDA ----------
 function addReplyToList(listEl, reply) {
-  const autor =
-    escapeHtml(getField(reply, "author", "name", "autor")) || "alguém";
-  const texto =
-    escapeHtml(getField(reply, "text", "message", "conteudo")) || "";
-  const criado =
-    reply && reply.createdAt ? new Date(reply.createdAt).toLocaleString() : "";
+  const autor = escapeHtml(getField(reply, "author", "name", "autor")) || "alguém";
+  const texto = escapeHtml(getField(reply, "text", "message", "conteudo")) || "";
+  const criado = reply && reply.createdAt ? new Date(reply.createdAt).toLocaleString() : "";
 
   const li = document.createElement("li");
   li.className = "reply";
   li.dataset.replyId = reply._id || reply.id || "";
-  li.innerHTML =
-    `<strong>${autor}:</strong> ${texto}` +
-    (criado ? `<small> — ${criado}</small>` : "");
+  li.innerHTML = `<strong>${autor}:</strong> ${texto}` + (criado ? `<small> — ${criado}</small>` : "");
   listEl.appendChild(li);
   return li;
 }
 
 function createDuvidaElement(d) {
-  const id =
-    getField(d, "_id", "id", "ID") || Math.random().toString(36).slice(2);
+  const id = getField(d, "_id", "id", "ID") || Math.random().toString(36).slice(2);
   const title = escapeHtml(getField(d, "title", "titulo"));
   const description = escapeHtml(getField(d, "description", "descricao"));
-  const author =
-    escapeHtml(getField(d, "author", "autor", "user", "name")) || "Anônimo";
+  const author = escapeHtml(getField(d, "author", "autor", "user", "name")) || "Anônimo";
   const createdAt = d.createdAt ? new Date(d.createdAt).toLocaleString() : "";
 
   const wrapper = document.createElement("div");
@@ -86,9 +74,7 @@ function createDuvidaElement(d) {
   wrapper.innerHTML = `
     <h3>${title || "(sem título)"}</h3>
     <p class="desc">${description || ""}</p>
-    <div class="meta"><strong>Autor:</strong> ${author} ${
-    createdAt ? " — " + createdAt : ""
-  }</div>
+    <div class="meta"><strong>Autor:</strong> ${author} ${createdAt ? " — " + createdAt : ""}</div>
     <ul class="replies"></ul>
     <div class="reply-area">
       <input class="reply-text" placeholder="Sua resposta" />
@@ -96,24 +82,19 @@ function createDuvidaElement(d) {
     </div>
   `;
 
-  // pega token e id do usuário logado (se houver)
   const token = getToken();
   const loggedUserId = getLoggedUserIdFromToken(token);
 
-  // botão de excluir dúvida (aparece só se for do próprio autor)
-  // o backend deve enviar authorId no objeto da dúvida
-  if (
-    (d.authorId || d.author_id || d.author) &&
-    loggedUserId &&
-    (d.authorId === loggedUserId || d.author === loggedUserId)
-  ) {
+  // botão excluir dúvida (só aparece se autorId do backend bater com token)
+  const duvidaAuthorId = d.authorId || d.author_id || null;
+  if (duvidaAuthorId && loggedUserId && String(duvidaAuthorId) === String(loggedUserId)) {
     const delBtn = document.createElement("button");
     delBtn.textContent = "Excluir dúvida";
     delBtn.className = "delete-btn";
     delBtn.addEventListener("click", async () => {
       if (!confirm("Tem certeza que deseja excluir esta dúvida?")) return;
       try {
-        const res = await fetch(`${API}/duvidas/${id}/respostas`, {
+        const res = await fetch(`${API}/duvidas/${id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -131,28 +112,23 @@ function createDuvidaElement(d) {
   }
 
   // renderizar replies existentes
-  const replies =
-    getField(d, "replies", "respostas", "answers", "comments") || [];
+  const replies = getField(d, "replies", "respostas", "answers", "comments") || [];
   const repliesList = wrapper.querySelector(".replies");
   replies.forEach((r) => {
     const li = addReplyToList(repliesList, r);
 
-    // se a resposta for do usuário logado, adiciona botão excluir
     const rAuthorId = r.authorId || r.author_id || r.author;
-    if (rAuthorId && loggedUserId && rAuthorId === loggedUserId) {
+    if (rAuthorId && loggedUserId && String(rAuthorId) === String(loggedUserId)) {
       const delReplyBtn = document.createElement("button");
       delReplyBtn.textContent = "Excluir resposta";
       delReplyBtn.className = "delete-reply-btn";
       delReplyBtn.addEventListener("click", async () => {
         if (!confirm("Deseja excluir esta resposta?")) return;
         try {
-          const res = await fetch(
-            `${API}/duvidas/${id}/respostas/${r._id || r.id}`,
-            {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
+          const res = await fetch(`${API}/duvidas/${id}/respostas/${r._id || r.id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (res.ok) li.remove();
           else {
             const err = await safeJson(res);
@@ -167,7 +143,7 @@ function createDuvidaElement(d) {
     }
   });
 
-  // evento do botão responder
+  // evento do botão responder (usa rota POST /duvidas/:id/respostas)
   const btn = wrapper.querySelector(".reply-btn");
   if (btn) {
     btn.addEventListener("click", async () => {
@@ -176,7 +152,7 @@ function createDuvidaElement(d) {
       if (!texto) return alert("Escreva algo antes de enviar a resposta.");
 
       try {
-        const res = await fetch(`${API}/duvidas/${id}`, {
+        const res = await fetch(`${API}/duvidas/${id}/respostas`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -189,23 +165,19 @@ function createDuvidaElement(d) {
           const saved = await res.json();
           const li = addReplyToList(repliesList, saved);
 
-          // se a resposta for do usuário logado, adiciona botão excluir
-          const savedAuthorId =
-            saved.authorId || saved.author_id || saved.author;
-          if (savedAuthorId && loggedUserId && savedAuthorId === loggedUserId) {
+          // adiciona botão excluir para a resposta criada (se do mesmo usuário)
+          const savedAuthorId = saved.authorId || saved.author_id || saved.author;
+          if (savedAuthorId && loggedUserId && String(savedAuthorId) === String(loggedUserId)) {
             const delReplyBtn = document.createElement("button");
             delReplyBtn.textContent = "Excluir resposta";
             delReplyBtn.className = "delete-reply-btn";
             delReplyBtn.addEventListener("click", async () => {
               if (!confirm("Deseja excluir esta resposta?")) return;
               try {
-                const resDel = await fetch(
-                  `${API}/duvidas/${id}/resposta/${saved._id || saved.id}`,
-                  {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
-                  }
-                );
+                const resDel = await fetch(`${API}/duvidas/${id}/respostas/${saved._id || saved.id}`, {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${token}` },
+                });
                 if (resDel.ok) li.remove();
                 else {
                   const err = await safeJson(resDel);
@@ -242,8 +214,7 @@ async function carregarDuvidas() {
   try {
     const res = await fetch(`${API}/duvidas`);
     if (!res.ok) {
-      container.innerHTML =
-        '<p class="small-muted">Erro ao carregar dúvidas.</p>';
+      container.innerHTML = '<p class="small-muted">Erro ao carregar dúvidas.</p>';
       return;
     }
     const list = await res.json();
@@ -259,8 +230,7 @@ async function carregarDuvidas() {
     });
   } catch (err) {
     console.error("Erro ao carregar dúvidas:", err);
-    container.innerHTML =
-      '<p class="small-muted">Não foi possível carregar neste momento.</p>';
+    container.innerHTML = '<p class="small-muted">Não foi possível carregar neste momento.</p>';
   }
 }
 
@@ -279,13 +249,13 @@ async function enviarDuvida() {
   const token = getToken();
 
   try {
-    const res = await fetch(`${API}/duvidas/${id}/respostas`, {
+    const res = await fetch(`${API}/duvidas`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ text: texto }),
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) {
@@ -294,7 +264,6 @@ async function enviarDuvida() {
       const el = createDuvidaElement(saved);
       if (container) container.insertBefore(el, container.firstChild);
 
-      // limpa form
       titleEl.value = "";
       if (autorEl) autorEl.value = "";
       descEl.value = "";
@@ -304,13 +273,10 @@ async function enviarDuvida() {
     }
   } catch (err) {
     console.error("Erro ao enviar dúvida:", err);
-    // fallback: mostra temporariamente no UI
+    // fallback visual
     const container = document.getElementById("duvidas");
     const temp = createDuvidaElement({
-      title,
-      description,
-      author,
-      createdAt: new Date().toISOString(),
+      title, description, author, createdAt: new Date().toISOString()
     });
     if (container) container.insertBefore(temp, container.firstChild);
     titleEl.value = "";
@@ -334,12 +300,8 @@ async function validarToken(token) {
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
 
-  // === PÁGINA index.html (login / cadastro) ===
-  if (
-    path.includes("index.html") ||
-    path.endsWith("/") ||
-    path.endsWith("index")
-  ) {
+  // === index.html (login/cadastro) ===
+  if (path.includes("index.html") || path.endsWith("/") || path.endsWith("index")) {
     const loginForm = document.getElementById("loginForm");
     const registerForm = document.getElementById("registerForm");
 
@@ -381,9 +343,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             body: JSON.stringify({ name, email, senha }),
           });
           const data = await res.json();
-          alert(
-            res.ok ? "Cadastro realizado!" : data.error || "Erro no cadastro"
-          );
+          alert(res.ok ? "Cadastro realizado!" : data.error || "Erro no cadastro");
         } catch (err) {
           console.error(err);
           alert("Erro de conexão");
@@ -391,10 +351,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    return; // não executa código de home.html nesta página
+    return;
   }
 
-  // === PÁGINA home.html ===
+  // === home.html ===
   if (path.includes("home.html")) {
     const token = getToken();
     const isValid = await validarToken(token);
@@ -404,14 +364,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // listeners de logout e enviar dúvida
     const btnLogout = document.getElementById("btnLogout");
     if (btnLogout) btnLogout.addEventListener("click", logout);
 
     const btnEnviar = document.getElementById("btnEnviar");
     if (btnEnviar) btnEnviar.addEventListener("click", enviarDuvida);
 
-    // carregar dúvidas
     carregarDuvidas();
   }
 });
