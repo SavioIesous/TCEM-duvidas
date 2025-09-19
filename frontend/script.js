@@ -98,8 +98,8 @@ function createDuvidaElement(d) {
   const token = getToken();
   const loggedUserId = getLoggedUserIdFromToken(token);
 
-  // botão excluir dúvida (só aparece se authorId do backend bater com token)
-  const duvidaAuthorId = d.authorId || d.author_id || d.author || null;
+  // botão excluir dúvida (só autor pode ver)
+  const duvidaAuthorId = d.authorId || d.author_id || null;
   if (
     duvidaAuthorId &&
     loggedUserId &&
@@ -111,19 +111,12 @@ function createDuvidaElement(d) {
     delBtn.addEventListener("click", async () => {
       if (!confirm("Tem certeza que deseja excluir esta dúvida?")) return;
       try {
-        // headers explícitos (sem spread)
-        const token = getToken();
-        const headers = {};
-        if (token) headers.Authorization = `Bearer ${token}`;
-
-        const res = await fetch(`${API}/duvidas/${id}/respostas/${replyId}`, {
+        const res = await fetch(`${API}/duvidas/${id}`, {
           method: "DELETE",
-          headers,
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (res.ok) {
-          wrapper.remove();
-        } else {
+        if (res.ok) wrapper.remove();
+        else {
           const err = await safeJson(res);
           alert(err?.error || "Erro ao excluir dúvida");
         }
@@ -132,7 +125,6 @@ function createDuvidaElement(d) {
         alert("Erro de conexão");
       }
     });
-
     wrapper.appendChild(delBtn);
   }
 
@@ -143,8 +135,7 @@ function createDuvidaElement(d) {
   replies.forEach((r) => {
     const li = addReplyToList(repliesList, r);
 
-    // se a resposta for do usuário logado, adiciona botão excluir
-    const rAuthorId = r.authorId || r.author_id || r.author || null;
+    const rAuthorId = r.authorId || r.author_id || r.author;
     if (
       rAuthorId &&
       loggedUserId &&
@@ -156,7 +147,6 @@ function createDuvidaElement(d) {
       delReplyBtn.addEventListener("click", async () => {
         if (!confirm("Deseja excluir esta resposta?")) return;
         try {
-          // DELETE /duvidas/:id/respostas/:replyId
           const replyId = r._id || r.id;
           const res = await fetch(`${API}/duvidas/${id}/respostas/${replyId}`, {
             method: "DELETE",
@@ -176,7 +166,7 @@ function createDuvidaElement(d) {
     }
   });
 
-  // evento do botão responder (usa rota POST /duvidas/:id/respostas)
+  // evento do botão responder (rota POST /duvidas/:id/respostas)
   const btn = wrapper.querySelector(".reply-btn");
   if (btn) {
     btn.addEventListener("click", async () => {
@@ -184,40 +174,23 @@ function createDuvidaElement(d) {
       const texto = ((textEl && textEl.value) || "").trim();
       if (!texto) return alert("Escreva algo antes de enviar a resposta.");
 
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
       try {
-        // POST /duvidas/:id/respostas
-        // CORRETO: deletar a dúvida inteira
-        const res = await fetch(`${API}/duvidas/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${API}/duvidas/${id}/respostas`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ text: texto }),
         });
 
         if (res.ok) {
-          // backend pode retornar a resposta (savedReply) ou o documento da dúvida.
           const saved = await res.json();
+          const li = addReplyToList(repliesList, saved);
 
-          // normalizar: se veio o objeto inteiro (duvida), pega última resposta
-          let replyObj = null;
-          if (Array.isArray(saved.replies) && saved.replies.length > 0) {
-            replyObj = saved.replies[saved.replies.length - 1];
-          } else if (saved._id && saved.text) {
-            // se backend retornou apenas a reply
-            replyObj = saved;
-          } else {
-            // fallback: construir um reply mínino
-            replyObj = {
-              text: texto,
-              authorId: loggedUserId,
-              author: "Você",
-              createdAt: new Date().toISOString(),
-            };
-          }
-
-          const li = addReplyToList(repliesList, replyObj);
-
-          // adiciona botão excluir se reply for do usuário (comparo seguro)
+          // botão excluir para a resposta criada
           const savedAuthorId =
-            replyObj.authorId || replyObj.author_id || replyObj.author || null;
+            saved.authorId || saved.author_id || saved.author;
           if (
             savedAuthorId &&
             loggedUserId &&
@@ -229,7 +202,7 @@ function createDuvidaElement(d) {
             delReplyBtn.addEventListener("click", async () => {
               if (!confirm("Deseja excluir esta resposta?")) return;
               try {
-                const replyId = replyObj._id || replyObj.id;
+                const replyId = saved._id || saved.id;
                 const resDel = await fetch(
                   `${API}/duvidas/${id}/respostas/${replyId}`,
                   {
