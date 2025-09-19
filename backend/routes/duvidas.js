@@ -5,23 +5,23 @@ import { verifyToken } from "./auth.js"; // <- importar o middleware
 
 const router = express.Router();
 
-const replySchema = new mongoose.Schema({
+const ReplySchema = new mongoose.Schema({
   text: { type: String, required: true },
-  author: { type: String, default: "Anônimo" },
-  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const duvidaSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  author: { type: String, default: "Anônimo" },
-  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  author: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
-  replies: [replySchema]
 });
 
-const Duvida = mongoose.model("Duvida", duvidaSchema);
+const DuvidaSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  author: { type: String, default: "Anônimo" },
+  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  description: { type: String, required: true },
+  replies: { type: [ReplySchema], default: [] },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Duvida = mongoose.model("Duvida", DuvidaSchema);
 
 // Listar dúvidas
 router.get("/", async (req, res) => {
