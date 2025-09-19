@@ -308,44 +308,35 @@ async function enviarDuvida() {
 
   const payload = { title, author, description };
   const token = getToken();
-
-  // montar headers explicitamente (sem spread)
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   try {
-    // POST /duvidas (criar dúvida) — note que aqui NÃO usamos id
+    // POST /duvidas (criar dúvida)
     const res = await fetch(`${API}/duvidas`, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) {
+    if (res.ok) {
+      const saved = await res.json();
+      const container = document.getElementById("duvidas");
+      const el = createDuvidaElement(saved);
+      if (container) container.insertBefore(el, container.firstChild);
+
+      // Limpa form
+      titleEl.value = "";
+      if (autorEl) autorEl.value = "";
+      descEl.value = "";
+      return;
+    } else {
       const err = await safeJson(res);
-      throw new Error(err?.error || `Status ${res.status}`);
+      throw new Error(err?.error || "Erro ao enviar dúvida.");
     }
-
-    // backend deve retornar o objeto da dúvida criada
-    const saved = await res.json();
-
-    // inserir no topo da lista (se container presente)
-    const container = document.getElementById("duvidas");
-    const el = createDuvidaElement(saved);
-    if (container) container.insertBefore(el, container.firstChild);
-
-    // limpar formulário
-    titleEl.value = "";
-    if (autorEl) autorEl.value = "";
-    descEl.value = "";
-
-    return saved;
   } catch (err) {
     console.error("Erro ao enviar dúvida:", err);
-    // tenta parse seguro da mensagem e mostra pro usuário
-    alert("Erro ao enviar dúvida: " + (err.message || "Erro desconhecido"));
-    // (opcional) não inserir fallback automático aqui — evita entradas duplicadas
-    return null;
+    alert("Erro ao enviar dúvida: " + (err.message || err));
   }
 }
 
