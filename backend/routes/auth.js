@@ -7,11 +7,11 @@ const router = express.Router();
 
 // ================== CADASTRO =================
 router.post("/register", async (req, res) => {
-  const { email, senha } = req.body;
+  const { name, email, senha } = req.body;
 
   try {
     const hash = await bcrypt.hash(senha, 10);
-    const newUser = new User({ email, senha: hash });
+    const newUser = new User({ name, email, senha: hash });
     await newUser.save();
     res.json({ message: "Usuário cadastrado com sucesso!" });
   } catch (err) {

@@ -36,13 +36,18 @@ router.get("/", async (req, res) => {
 // Criar dúvida (autenticado)
 router.post("/", verifyToken, async (req, res) => {
   try {
-    const { title, description, author } = req.body;
+    const { title, description } = req.body;
+
+    // busca usuário logado
+    const user = await mongoose.model("User").findById(req.user.id);
+
     const novaDuvida = new Duvida({
       title,
       description,
-      author: author || "Anônimo",
+      author: user?.name || "Anônimo", // usa nome do usuário
       authorId: req.user.id
     });
+
     await novaDuvida.save();
     res.status(201).json(novaDuvida);
   } catch (err) {
@@ -56,10 +61,11 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
     const duvida = await Duvida.findById(req.params.id);
     if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
 
-    const { text, author } = req.body;
+    const user = await mongoose.model("User").findById(req.user.id);
+
     const reply = {
-      text,
-      author: author || "Anônimo",
+      text: req.body.text,
+      author: user?.name || "Anônimo",
       authorId: req.user.id,
       createdAt: new Date()
     };
