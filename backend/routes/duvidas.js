@@ -7,7 +7,11 @@ const router = express.Router();
 
 const ReplySchema = new mongoose.Schema({
   text: { type: String, required: true },
-  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
   author: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
@@ -15,7 +19,11 @@ const ReplySchema = new mongoose.Schema({
 const DuvidaSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: String, default: "Anônimo" },
-  authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
   description: { type: String, required: true },
   replies: { type: [ReplySchema], default: [] },
   createdAt: { type: Date, default: Date.now },
@@ -45,7 +53,7 @@ router.post("/", verifyToken, async (req, res) => {
       title,
       description,
       author: user?.name || "Anônimo", // usa nome do usuário
-      authorId: req.user.id
+      authorId: req.user.id,
     });
 
     await novaDuvida.save();
@@ -59,7 +67,8 @@ router.post("/", verifyToken, async (req, res) => {
 router.post("/:id/respostas", verifyToken, async (req, res) => {
   try {
     const duvida = await Duvida.findById(req.params.id);
-    if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
+    if (!duvida)
+      return res.status(404).json({ error: "Dúvida não encontrada" });
 
     const user = await mongoose.model("User").findById(req.user.id);
 
@@ -67,7 +76,7 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
       text: req.body.text,
       author: user?.name || "Anônimo",
       authorId: req.user.id,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     duvida.replies.push(reply);
@@ -83,10 +92,13 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const duvida = await Duvida.findById(req.params.id);
-    if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
+    if (!duvida)
+      return res.status(404).json({ error: "Dúvida não encontrada" });
 
-    if (!duvida.authorId || duvida.authorId.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Você não tem permissão para excluir esta dúvida" });
+    if (!duvida.authorId || String(duvida.authorId) !== String(req.user.id)) {
+      return res
+        .status(403)
+        .json({ error: "Você não tem permissão para excluir esta dúvida" });
     }
 
     await duvida.deleteOne();
@@ -100,13 +112,17 @@ router.delete("/:id", verifyToken, async (req, res) => {
 router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
   try {
     const duvida = await Duvida.findById(req.params.id);
-    if (!duvida) return res.status(404).json({ error: "Dúvida não encontrada" });
+    if (!duvida)
+      return res.status(404).json({ error: "Dúvida não encontrada" });
 
     const resposta = duvida.replies.id(req.params.replyId);
-    if (!resposta) return res.status(404).json({ error: "Resposta não encontrada" });
+    if (!resposta)
+      return res.status(404).json({ error: "Resposta não encontrada" });
 
     if (!resposta.authorId || resposta.authorId.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Você não tem permissão para excluir esta resposta" });
+      return res
+        .status(403)
+        .json({ error: "Você não tem permissão para excluir esta resposta" });
     }
 
     resposta.remove();

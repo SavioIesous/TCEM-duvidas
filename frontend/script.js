@@ -269,47 +269,37 @@ async function carregarDuvidas() {
 }
 
 async function enviarDuvida() {
-  const titleEl = document.getElementById("titulo");
-  const autorEl = document.getElementById("autor");
-  const descEl = document.getElementById("descricao");
-  if (!titleEl || !descEl) return alert("Formulário não encontrado.");
+  const titleEl = document.getElementById("title");
+  const descriptionEl = document.getElementById("description");
 
   const title = titleEl.value.trim();
-  const author = (autorEl && autorEl.value.trim()) || "Anônimo";
-  const description = descEl.value.trim();
-  if (!title || !description) return alert("Preencha título e descrição.");
+  const description = descriptionEl.value.trim();
 
-  const payload = { title, author, description };
-  const token = getToken();
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (!title || !description) {
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  const payload = { title, description }; // 👈 só isso, sem author
 
   try {
-    // POST /duvidas (criar dúvida)
-    const res = await fetch(`${API}/duvidas`, {
+    const res = await fetch("http://localhost:5000/duvidas", {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
       body: JSON.stringify(payload),
     });
 
-    if (res.ok) {
-      const saved = await res.json();
-      const container = document.getElementById("duvidas");
-      const el = createDuvidaElement(saved);
-      if (container) container.insertBefore(el, container.firstChild);
+    if (!res.ok) throw new Error("Erro ao enviar dúvida");
 
-      // Limpa form
-      titleEl.value = "";
-      if (autorEl) autorEl.value = "";
-      descEl.value = "";
-      return;
-    } else {
-      const err = await safeJson(res);
-      throw new Error(err?.error || "Erro ao enviar dúvida.");
-    }
-  } catch (err) {
-    console.error("Erro ao enviar dúvida:", err);
-    alert("Erro ao enviar dúvida: " + (err.message || err));
+    titleEl.value = "";
+    descriptionEl.value = "";
+    carregarDuvidas();
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao enviar dúvida");
   }
 }
 
