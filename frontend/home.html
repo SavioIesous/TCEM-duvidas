@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plataforma de Dúvidas</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header class="topbar">
-    <h1>Plataforma de Dúvidas</h1>
-    <button id="btnLogout">Sair</button>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Plataforma de Dúvidas</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Plataforma de Dúvidas</h1>
+      <button id="btnLogout">Sair</button>
+    </header>
 
-  <main class="container">
-    <section class="card post-area">
-      <h2>Postar Dúvida</h2>
-      <input id="titulo" type="text" placeholder="Título" />
-      <input id="autor" type="text" placeholder="Seu nome" />
-      <textarea id="descricao" placeholder="Descrição"></textarea>
-      <button id="btnEnviar">Enviar Dúvida</button>
-    </section>
+    <main class="container">
+      <section class="card post-area">
+        <h2>Postar Dúvida</h2>
+        <input id="title" type="text" placeholder="Digite o título" />
+        <input id="autor" type="text" placeholder="Seu nome" />
+        <textarea id="description" placeholder="Digite a descrição"></textarea>
+        <button onclick="enviarDuvida()">Enviar</button>
+      </section>
 
-    <section class="card">
-      <h2>Dúvidas</h2>
-      <div id="duvidas" class="duvidas-list"></div>
-    </section>
-  </main>
+      <section class="card">
+        <h2>Dúvidas</h2>
+        <div id="duvidas" class="duvidas-list"></div>
+      </section>
+    </main>
 
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
