@@ -113,31 +113,72 @@ router.delete("/:id", verifyToken, async (req, res) => {
 });
 
 // Deletar resposta (só autor da resposta)
+// Deletar resposta (só autor da resposta) - versão com logs de debug
 router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
   try {
-    const duvida = await Duvida.findById(req.params.id);
-    if (!duvida)
-      return res.status(404).json({ error: "Dúvida não encontrada" });
+    console.log("DEBUG DELETE resposta -> params:", req.params);
+    console.log("DEBUG DELETE resposta -> user (do token):", req.user);
 
+    const duvida = await Duvida.findById(req.params.id);
+    if (!duvida) {
+      console.log("DEBUG: dúvida não encontrada", req.params.id);
+      return res.status(404).json({ error: "Dúvida não encontrada" });
+    }
+
+    // pega a resposta pelo subdocument id
     const resposta = duvida.replies.id(req.params.replyId);
-    if (!resposta)
+    if (!resposta) {
+      console.log(
+        "DEBUG: resposta não encontrada no array. replies:",
+        duvida.replies.map((r) => String(r._id))
+      );
       return res.status(404).json({ error: "Resposta não encontrada" });
+    }
+
+    console.log("DEBUG: resposta encontrada:", {
+      id: String(resposta._id),
+      authorId: String(resposta.authorId),
+      author: resposta.author,
+      text: resposta.text,
+    });
+
+    // garante req.user e compara como string
+    if (!req.user || !req.user.id) {
+      console.log("DEBUG: req.user ausente:", req.user);
+      return res.status(401).json({ error: "Token inválido ou ausente" });
+    }
 
     if (
       !resposta.authorId ||
       String(resposta.authorId) !== String(req.user.id)
     ) {
+      console.log(
+        "DEBUG: autorização falhou. resposta.authorId:",
+        String(resposta.authorId),
+        "req.user.id:",
+        String(req.user.id)
+      );
       return res
         .status(403)
         .json({ error: "Você não tem permissão para excluir esta resposta" });
     }
 
+    // remove e salva
     resposta.remove();
     await duvida.save();
+    console.log("DEBUG: resposta removida e duvida salva.");
 
     res.json({ message: "Resposta excluída com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao excluir resposta" });
+    console.error("ERROR ao deletar resposta:", err);
+    // retorna stack no JSON só para debugging — remova em produção
+    res
+      .status(500)
+      .json({
+        error: "Erro ao excluir resposta",
+        details: err.message,
+        stack: err.stack,
+      });
   }
 });
 
