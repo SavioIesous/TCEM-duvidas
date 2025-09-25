@@ -206,16 +206,12 @@ function createDuvidaElement(d) {
             delReplyBtn.className = "delete-reply-btn";
             delReplyBtn.addEventListener("click", async () => {
               if (!confirm("Deseja excluir esta resposta?")) return;
+              // desabilita botão para evitar cliques múltiplos
+              delReplyBtn.disabled = true;
+              delReplyBtn.textContent = "Excluindo...";
+
               try {
                 const replyId = li.dataset.replyId || r._id || r.id;
-                console.log(
-                  "DEBUG CLIENT -> deleting replyId:",
-                  replyId,
-                  "duvidaId:",
-                  id,
-                  "token:",
-                  getToken()
-                );
                 const res = await fetch(
                   `${API}/duvidas/${id}/respostas/${replyId}`,
                   {
@@ -223,18 +219,21 @@ function createDuvidaElement(d) {
                     headers: { Authorization: `Bearer ${getToken()}` },
                   }
                 );
-                console.log(
-                  "DEBUG CLIENT -> delete response status:",
-                  res.status
-                );
-                if (res.ok) li.remove();
-                else {
+
+                if (res.ok) {
+                  li.remove();
+                } else {
                   const err = await safeJson(res);
                   alert(err?.error || "Erro ao excluir resposta");
+                  // reabilitar botão se falhar
+                  delReplyBtn.disabled = false;
+                  delReplyBtn.textContent = "Excluir resposta";
                 }
               } catch (err) {
                 console.error(err);
                 alert("Erro de conexão");
+                delReplyBtn.disabled = false;
+                delReplyBtn.textContent = "Excluir resposta";
               }
             });
 

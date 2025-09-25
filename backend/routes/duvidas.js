@@ -131,82 +131,65 @@ router.delete("/:id", verifyToken, async (req, res) => {
 });
 
 // Deletar resposta (só autor da resposta) - com logs e validações
+// Deletar resposta (só autor da resposta) - forma atômica com $pull
 router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
   try {
-    console.log("DEBUG DELETE -> params:", req.params);
-    console.log("DEBUG DELETE -> user:", req.user);
+    const { id: duvidaId, replyId } = req.params;
 
-    const duvidaId = req.params.id;
-    const replyId = req.params.replyId;
-
-    if (!mongoose.Types.ObjectId.isValid(duvidaId)) {
-      console.log("DEBUG: duvidaId inválido:", duvidaId);
+    // valida ids
+    if (!mongoose.Types.ObjectId.isValid(duvidaId))
       return res.status(400).json({ error: "ID da dúvida inválido" });
-    }
-    if (!mongoose.Types.ObjectId.isValid(replyId)) {
-      console.log("DEBUG: replyId inválido:", replyId);
+    if (!mongoose.Types.ObjectId.isValid(replyId))
       return res.status(400).json({ error: "ID da resposta inválido" });
-    }
 
-    const duvida = await Duvida.findById(duvidaId);
-    if (!duvida) {
-      console.log("DEBUG: dúvida não encontrada:", duvidaId);
-      return res.status(404).json({ error: "Dúvida não encontrada" });
-    }
-
-    console.log(
-      "DEBUG: replies ids:",
-      duvida.replies.map((r) => String(r._id))
+    // buscar apenas o subdocumento da resposta para checar autor
+    const duvidaComResposta = await Duvida.findOne(
+      { _id: duvidaId, "replies._id": replyId },
+      { "replies.$": 1 } // pega só o subdocumento correspondente
     );
 
-    const resposta = duvida.replies.id(replyId);
-    if (!resposta) {
-      console.log("DEBUG: resposta não encontrada no array");
+    if (!duvidaComResposta) {
       return res.status(404).json({ error: "Resposta não encontrada" });
     }
 
-    console.log("DEBUG: resposta encontrada:", {
-      id: String(resposta._id),
-      authorId: String(resposta.authorId),
-      author: resposta.author,
-      text: resposta.text,
-    });
+    const resposta = duvidaComResposta.replies[0];
+    if (!resposta)
+      return res.status(404).json({ error: "Resposta não encontrada" });
 
+    // checar token presente
     if (!req.user || !req.user.id) {
-      console.log("DEBUG: req.user ausente ou inválido:", req.user);
       return res.status(401).json({ error: "Token inválido ou ausente" });
     }
 
+    // checar se é o autor
     if (
       !resposta.authorId ||
       String(resposta.authorId) !== String(req.user.id)
     ) {
-      console.log(
-        "DEBUG: autorização falhou. resposta.authorId:",
-        String(resposta.authorId),
-        "req.user.id:",
-        String(req.user.id)
-      );
       return res
         .status(403)
         .json({ error: "Você não tem permissão para excluir esta resposta" });
     }
 
-    // remove subdocument e salva
-    resposta.remove();
-    await duvida.save();
-    console.log("DEBUG: resposta removida e duvida salva.");
+    // operação atômica para remover a resposta
+    const result = await Duvida.updateOne(
+      { _id: duvidaId },
+      { $pull: { replies: { _id: replyId } } }
+    );
 
-    res.json({ message: "Resposta excluída com sucesso" });
+    if (result.modifiedCount === 0) {
+      // nenhum documento modificado — pode indicar que já foi removida
+      return res
+        .status(404)
+        .json({ error: "Resposta não encontrada (já removida?)" });
+    }
+
+    return res.json({ message: "Resposta excluída com sucesso" });
   } catch (err) {
-    console.error("ERROR ao deletar resposta:", err);
-    res
+    console.error("ERROR ao deletar resposta (atômico):", err);
+    return res
       .status(500)
-      .json({
-        error: "Erro ao excluir resposta",
-        details: err.message,
-        stack: err.stack,
-      });
+      .json({ error: "Erro ao excluir resposta", details: err.message });
   }
 });
 
