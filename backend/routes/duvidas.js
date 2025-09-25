@@ -52,7 +52,7 @@ router.post("/", verifyToken, async (req, res) => {
     const novaDuvida = new Duvida({
       title,
       description,
-      author: user?.name || "Anônimo", // usa nome do usuário
+      author: user?.name || "Anônimo",
       authorId: req.user.id,
     });
 
