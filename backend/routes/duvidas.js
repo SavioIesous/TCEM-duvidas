@@ -1,7 +1,7 @@
 // backend/routes/duvidas.js
 import express from "express";
 import mongoose from "mongoose";
-import { verifyToken } from "./auth.js"; // <- importar o middleware
+import { verifyToken } from "./auth.js";
 
 const router = express.Router();
 
@@ -37,7 +37,10 @@ router.get("/", async (req, res) => {
     const duvidas = await Duvida.find();
     res.json(duvidas);
   } catch (err) {
-    res.status(500).json({ error: "Erro ao buscar dúvidas" });
+    console.error("Erro ao buscar dúvidas:", err);
+    res
+      .status(500)
+      .json({ error: "Erro ao buscar dúvidas", details: err.message });
   }
 });
 
@@ -45,8 +48,6 @@ router.get("/", async (req, res) => {
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { title, description } = req.body;
-
-    // busca usuário logado
     const user = await mongoose.model("User").findById(req.user.id);
 
     const novaDuvida = new Duvida({
@@ -59,13 +60,22 @@ router.post("/", verifyToken, async (req, res) => {
     await novaDuvida.save();
     res.status(201).json(novaDuvida);
   } catch (err) {
-    res.status(400).json({ error: "Erro ao criar dúvida" });
+    console.error("Erro ao criar dúvida:", err);
+    res
+      .status(400)
+      .json({ error: "Erro ao criar dúvida", details: err.message });
   }
 });
 
+// Adicionar resposta (autenticado)
 router.post("/:id/respostas", verifyToken, async (req, res) => {
   try {
-    const duvida = await Duvida.findById(req.params.id);
+    const duvidaId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(duvidaId)) {
+      return res.status(400).json({ error: "ID da dúvida inválido" });
+    }
+
+    const duvida = await Duvida.findById(duvidaId);
     if (!duvida)
       return res.status(404).json({ error: "Dúvida não encontrada" });
 
@@ -78,24 +88,29 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
       createdAt: new Date(),
     };
 
-    // push + save
     duvida.replies.push(reply);
     await duvida.save();
 
-    // pegar o subdocumento salvo (ele já terá _id gerado pelo mongoose)
+    // pega o subdocumento salvo (já terá _id)
     const savedReply = duvida.replies[duvida.replies.length - 1];
 
     res.status(201).json(savedReply);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao adicionar resposta" });
+    console.error("Erro ao adicionar resposta:", err);
+    res
+      .status(500)
+      .json({ error: "Erro ao adicionar resposta", details: err.message });
   }
 });
 
 // Deletar dúvida (só autor)
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
-    const duvida = await Duvida.findById(req.params.id);
+    const duvidaId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(duvidaId)) {
+      return res.status(400).json({ error: "ID da dúvida inválido" });
+    }
+    const duvida = await Duvida.findById(duvidaId);
     if (!duvida)
       return res.status(404).json({ error: "Dúvida não encontrada" });
 
@@ -108,30 +123,45 @@ router.delete("/:id", verifyToken, async (req, res) => {
     await duvida.deleteOne();
     res.json({ message: "Dúvida excluída com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao excluir dúvida" });
+    console.error("Erro ao excluir dúvida:", err);
+    res
+      .status(500)
+      .json({ error: "Erro ao excluir dúvida", details: err.message });
   }
 });
 
-// Deletar resposta (só autor da resposta)
-// Deletar resposta (só autor da resposta) - versão com logs de debug
+// Deletar resposta (só autor da resposta) - com logs e validações
 router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
   try {
-    console.log("DEBUG DELETE resposta -> params:", req.params);
-    console.log("DEBUG DELETE resposta -> user (do token):", req.user);
+    console.log("DEBUG DELETE -> params:", req.params);
+    console.log("DEBUG DELETE -> user:", req.user);
 
-    const duvida = await Duvida.findById(req.params.id);
+    const duvidaId = req.params.id;
+    const replyId = req.params.replyId;
+
+    if (!mongoose.Types.ObjectId.isValid(duvidaId)) {
+      console.log("DEBUG: duvidaId inválido:", duvidaId);
+      return res.status(400).json({ error: "ID da dúvida inválido" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(replyId)) {
+      console.log("DEBUG: replyId inválido:", replyId);
+      return res.status(400).json({ error: "ID da resposta inválido" });
+    }
+
+    const duvida = await Duvida.findById(duvidaId);
     if (!duvida) {
-      console.log("DEBUG: dúvida não encontrada", req.params.id);
+      console.log("DEBUG: dúvida não encontrada:", duvidaId);
       return res.status(404).json({ error: "Dúvida não encontrada" });
     }
 
-    // pega a resposta pelo subdocument id
-    const resposta = duvida.replies.id(req.params.replyId);
+    console.log(
+      "DEBUG: replies ids:",
+      duvida.replies.map((r) => String(r._id))
+    );
+
+    const resposta = duvida.replies.id(replyId);
     if (!resposta) {
-      console.log(
-        "DEBUG: resposta não encontrada no array. replies:",
-        duvida.replies.map((r) => String(r._id))
-      );
+      console.log("DEBUG: resposta não encontrada no array");
       return res.status(404).json({ error: "Resposta não encontrada" });
     }
 
@@ -142,9 +172,8 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
       text: resposta.text,
     });
 
-    // garante req.user e compara como string
     if (!req.user || !req.user.id) {
-      console.log("DEBUG: req.user ausente:", req.user);
+      console.log("DEBUG: req.user ausente ou inválido:", req.user);
       return res.status(401).json({ error: "Token inválido ou ausente" });
     }
 
@@ -163,7 +192,7 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
         .json({ error: "Você não tem permissão para excluir esta resposta" });
     }
 
-    // remove e salva
+    // remove subdocument e salva
     resposta.remove();
     await duvida.save();
     console.log("DEBUG: resposta removida e duvida salva.");
@@ -171,7 +200,6 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
     res.json({ message: "Resposta excluída com sucesso" });
   } catch (err) {
     console.error("ERROR ao deletar resposta:", err);
-    // retorna stack no JSON só para debugging — remova em produção
     res
       .status(500)
       .json({
@@ -183,4 +211,3 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
 });
 
 export default router;
-//teste

@@ -207,17 +207,29 @@ function createDuvidaElement(d) {
             delReplyBtn.addEventListener("click", async () => {
               if (!confirm("Deseja excluir esta resposta?")) return;
               try {
-                const replyId = li.dataset.replyId || saved._id || saved.id;
-                const resDel = await fetch(
+                const replyId = li.dataset.replyId || r._id || r.id;
+                console.log(
+                  "DEBUG CLIENT -> deleting replyId:",
+                  replyId,
+                  "duvidaId:",
+                  id,
+                  "token:",
+                  getToken()
+                );
+                const res = await fetch(
                   `${API}/duvidas/${id}/respostas/${replyId}`,
                   {
                     method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${getToken()}` },
                   }
                 );
-                if (resDel.ok) li.remove();
+                console.log(
+                  "DEBUG CLIENT -> delete response status:",
+                  res.status
+                );
+                if (res.ok) li.remove();
                 else {
-                  const err = await safeJson(resDel);
+                  const err = await safeJson(res);
                   alert(err?.error || "Erro ao excluir resposta");
                 }
               } catch (err) {
@@ -225,6 +237,7 @@ function createDuvidaElement(d) {
                 alert("Erro de conexão");
               }
             });
+
             li.appendChild(delReplyBtn);
           }
         } else {
