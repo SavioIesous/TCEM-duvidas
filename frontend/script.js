@@ -147,7 +147,8 @@ function createDuvidaElement(d) {
       delReplyBtn.addEventListener("click", async () => {
         if (!confirm("Deseja excluir esta resposta?")) return;
         try {
-          const replyId = r._id || r.id;
+          // pegar id do dataset do li -> garante que temos o id correto
+          const replyId = li.dataset.replyId || r._id || r.id;
           const res = await fetch(`${API}/duvidas/${id}/respostas/${replyId}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
@@ -188,7 +189,11 @@ function createDuvidaElement(d) {
           const saved = await res.json();
           const li = addReplyToList(repliesList, saved);
 
-          // botão excluir para a resposta criada
+          // garantir que o li tem o id que veio do backend:
+          li.dataset.replyId =
+            saved._id || saved.id || li.dataset.replyId || "";
+
+          // botão excluir (usar o dataset do li)
           const savedAuthorId =
             saved.authorId || saved.author_id || saved.author;
           if (
@@ -202,7 +207,7 @@ function createDuvidaElement(d) {
             delReplyBtn.addEventListener("click", async () => {
               if (!confirm("Deseja excluir esta resposta?")) return;
               try {
-                const replyId = saved._id || saved.id;
+                const replyId = li.dataset.replyId || saved._id || saved.id;
                 const resDel = await fetch(
                   `${API}/duvidas/${id}/respostas/${replyId}`,
                   {

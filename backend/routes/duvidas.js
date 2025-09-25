@@ -63,7 +63,6 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
-// Adicionar resposta (autenticado)
 router.post("/:id/respostas", verifyToken, async (req, res) => {
   try {
     const duvida = await Duvida.findById(req.params.id);
@@ -79,11 +78,16 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
       createdAt: new Date(),
     };
 
+    // push + save
     duvida.replies.push(reply);
     await duvida.save();
 
-    res.status(201).json(reply);
+    // pegar o subdocumento salvo (ele já terá _id gerado pelo mongoose)
+    const savedReply = duvida.replies[duvida.replies.length - 1];
+
+    res.status(201).json(savedReply);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erro ao adicionar resposta" });
   }
 });
@@ -119,7 +123,10 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
     if (!resposta)
       return res.status(404).json({ error: "Resposta não encontrada" });
 
-    if (!resposta.authorId || resposta.authorId.toString() !== req.user.id) {
+    if (
+      !resposta.authorId ||
+      String(resposta.authorId) !== String(req.user.id)
+    ) {
       return res
         .status(403)
         .json({ error: "Você não tem permissão para excluir esta resposta" });
