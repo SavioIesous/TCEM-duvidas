@@ -1,7 +1,5 @@
-// ---------- CONFIG ----------
 const API = "https://tcem-duvidas-backend.onrender.com";
 
-// ---------- HELPERS ----------
 function escapeHtml(text) {
   if (!text) return "";
   return String(text)
@@ -43,14 +41,12 @@ function getLoggedUserIdFromToken(token) {
   }
 }
 
-// ---------- SESSÃO ----------
 function logout() {
   localStorage.removeItem("token");
   window.location.href = "index.html";
 }
 window.logout = logout;
 
-// ---------- RENDER DÚVIDA ----------
 function addReplyToList(listEl, reply) {
   const autor =
     escapeHtml(getField(reply, "author", "name", "autor")) || "alguém";
@@ -98,7 +94,6 @@ function createDuvidaElement(d) {
   const token = getToken();
   const loggedUserId = getLoggedUserIdFromToken(token);
 
-  // botão excluir dúvida (só autor pode ver)
   const duvidaAuthorId = d.authorId || d.author_id || null;
   if (
     duvidaAuthorId &&
@@ -128,7 +123,6 @@ function createDuvidaElement(d) {
     wrapper.appendChild(delBtn);
   }
 
-  // renderizar replies existentes
   const replies =
     getField(d, "replies", "respostas", "answers", "comments") || [];
   const repliesList = wrapper.querySelector(".replies");
@@ -147,7 +141,6 @@ function createDuvidaElement(d) {
       delReplyBtn.addEventListener("click", async () => {
         if (!confirm("Deseja excluir esta resposta?")) return;
         try {
-          // pegar id do dataset do li -> garante que temos o id correto
           const replyId = li.dataset.replyId || r._id || r.id;
           const res = await fetch(`${API}/duvidas/${id}/respostas/${replyId}`, {
             method: "DELETE",
@@ -167,7 +160,6 @@ function createDuvidaElement(d) {
     }
   });
 
-  // evento do botão responder (rota POST /duvidas/:id/respostas)
   const btn = wrapper.querySelector(".reply-btn");
   if (btn) {
     btn.addEventListener("click", async () => {
@@ -189,11 +181,9 @@ function createDuvidaElement(d) {
           const saved = await res.json();
           const li = addReplyToList(repliesList, saved);
 
-          // garantir que o li tem o id que veio do backend:
           li.dataset.replyId =
             saved._id || saved.id || li.dataset.replyId || "";
 
-          // botão excluir (usar o dataset do li)
           const savedAuthorId =
             saved.authorId || saved.author_id || saved.author;
           if (
@@ -206,7 +196,6 @@ function createDuvidaElement(d) {
             delReplyBtn.className = "delete-reply-btn";
             delReplyBtn.addEventListener("click", async () => {
               if (!confirm("Deseja excluir esta resposta?")) return;
-              // desabilita botão para evitar cliques múltiplos
               delReplyBtn.disabled = true;
               delReplyBtn.textContent = "Excluindo...";
 
@@ -225,7 +214,6 @@ function createDuvidaElement(d) {
                 } else {
                   const err = await safeJson(res);
                   alert(err?.error || "Erro ao excluir resposta");
-                  // reabilitar botão se falhar
                   delReplyBtn.disabled = false;
                   delReplyBtn.textContent = "Excluir resposta";
                 }
@@ -255,7 +243,6 @@ function createDuvidaElement(d) {
   return wrapper;
 }
 
-// ---------- CARREGAR / ENVIAR DÚVIDAS ----------
 async function carregarDuvidas() {
   const container = document.getElementById("duvidas");
   if (!container) return;
@@ -289,15 +276,15 @@ async function enviarDuvida() {
   const titleEl = document.getElementById("title");
   const descriptionEl = document.getElementById("description");
 
-  const title = titleEl.value.trim();
-  const description = descriptionEl.value.trim();
+  const title = (titleEl && titleEl.value || "").trim();
+  const description = (descriptionEl && descriptionEl.value || "").trim();
 
   if (!title || !description) {
-    alert("Preencha todos os campos!");
+    alert("Preencha título e descrição!");
     return;
   }
 
-  const payload = { title, description }; // 👈 só isso, sem author
+  const payload = { title, description };
 
   try {
     console.log("Token:", getToken());
@@ -311,18 +298,21 @@ async function enviarDuvida() {
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error("Erro ao enviar dúvida");
+    if (!res.ok) {
+      const err = await safeJson(res);
+      throw new Error(err?.error || "Erro ao enviar dúvida");
+    }
 
-    titleEl.value = "";
-    descriptionEl.value = "";
+    if (titleEl) titleEl.value = "";
+    if (descriptionEl) descriptionEl.value = "";
+
     carregarDuvidas();
   } catch (error) {
     console.error(error);
-    alert("Erro ao enviar dúvida");
+    alert("Erro ao enviar dúvida: " + (error.message || ""));
   }
 }
 
-// ---------- INICIALIZAÇÃO ----------
 async function validarToken(token) {
   if (!token) return false;
   try {
@@ -338,7 +328,6 @@ async function validarToken(token) {
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
 
-  // === index.html (login/cadastro) ===
   if (
     path.includes("index.html") ||
     path.endsWith("/") ||
@@ -398,7 +387,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // === home.html ===
   if (path.includes("home.html")) {
     const token = getToken();
     const isValid = await validarToken(token);

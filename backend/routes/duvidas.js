@@ -1,4 +1,3 @@
-// backend/routes/duvidas.js
 import express from "express";
 import mongoose from "mongoose";
 import { verifyToken } from "./auth.js";
@@ -31,7 +30,6 @@ const DuvidaSchema = new mongoose.Schema({
 
 const Duvida = mongoose.model("Duvida", DuvidaSchema);
 
-// Listar dúvidas
 router.get("/", async (req, res) => {
   try {
     const duvidas = await Duvida.find();
@@ -44,16 +42,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Criar dúvida (autenticado)
 router.post("/", verifyToken, async (req, res) => {
   try {
-    const { title, description } = req.body;
+    console.log("Corpo recebido:", req.body);
+    const { title, description, author } = req.body;
     const user = await mongoose.model("User").findById(req.user.id);
 
     const novaDuvida = new Duvida({
       title,
       description,
-      author: user?.name || "Anônimo",
+      author: author || user?.name || "Anônimo",
       authorId: req.user.id,
     });
 
@@ -67,7 +65,6 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
-// Adicionar resposta (autenticado)
 router.post("/:id/respostas", verifyToken, async (req, res) => {
   try {
     const duvidaId = req.params.id;
@@ -91,7 +88,6 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
     duvida.replies.push(reply);
     await duvida.save();
 
-    // pega o subdocumento salvo (já terá _id)
     const savedReply = duvida.replies[duvida.replies.length - 1];
 
     res.status(201).json(savedReply);
@@ -103,7 +99,6 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
   }
 });
 
-// Deletar dúvida (só autor)
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const duvidaId = req.params.id;
@@ -130,22 +125,18 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// Deletar resposta (só autor da resposta) - com logs e validações
-// Deletar resposta (só autor da resposta) - forma atômica com $pull
 router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
   try {
     const { id: duvidaId, replyId } = req.params;
 
-    // valida ids
     if (!mongoose.Types.ObjectId.isValid(duvidaId))
       return res.status(400).json({ error: "ID da dúvida inválido" });
     if (!mongoose.Types.ObjectId.isValid(replyId))
       return res.status(400).json({ error: "ID da resposta inválido" });
 
-    // buscar apenas o subdocumento da resposta para checar autor
     const duvidaComResposta = await Duvida.findOne(
       { _id: duvidaId, "replies._id": replyId },
-      { "replies.$": 1 } // pega só o subdocumento correspondente
+      { "replies.$": 1 }
     );
 
     if (!duvidaComResposta) {
@@ -156,12 +147,10 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
     if (!resposta)
       return res.status(404).json({ error: "Resposta não encontrada" });
 
-    // checar token presente
     if (!req.user || !req.user.id) {
       return res.status(401).json({ error: "Token inválido ou ausente" });
     }
 
-    // checar se é o autor
     if (
       !resposta.authorId ||
       String(resposta.authorId) !== String(req.user.id)
@@ -171,14 +160,12 @@ router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
         .json({ error: "Você não tem permissão para excluir esta resposta" });
     }
 
-    // operação atômica para remover a resposta
     const result = await Duvida.updateOne(
       { _id: duvidaId },
       { $pull: { replies: { _id: replyId } } }
     );
 
     if (result.modifiedCount === 0) {
-      // nenhum documento modificado — pode indicar que já foi removida
       return res
         .status(404)
         .json({ error: "Resposta não encontrada (já removida?)" });
