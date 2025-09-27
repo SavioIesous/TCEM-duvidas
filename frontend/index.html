@@ -1,35 +1,235 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login e Cadastro</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <main class="containerLogin">
-    <h1>Plataforma de Dúvidas - Login e Cadastro</h1>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login e Cadastro - Plataforma de Dúvidas</title>
 
-    <section class="card">
-      <h2>Login</h2>
-      <form id="loginForm">
-        <input id="loginEmail" type="email" placeholder="Email" required />
-        <input id="loginPassword" type="password" placeholder="Senha" required />
-        <button type="submit">Entrar</button>
-      </form>
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css"
+    />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <h2>Aprenda e compartilhe conhecimento</h2>
+        <p>
+          Conecte-se com outros estudantes, tire suas dúvidas e evolua no
+          aprendizado colaborativo.
+        </p>
+        <a href="#loginSection" class="cta-btn">Começar Agora 🚀</a>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Cadastro</h2>
-      <form id="registerForm">
-        <input id="registerName" type="text" placeholder="Nome" required/>
-        <input id="registerEmail" type="email" placeholder="Email" required />
-        <input id="registerPassword" type="password" placeholder="Senha" required />
-        <button type="submit">Cadastrar</button>
-      </form>
-    </section>
-  </main>
+    <main class="containerLogin" id="loginSection">
+      <div class="brand">
+        <svg
+          class="logo"
+          xmlns="http://www.w3.org/2000/svg"
+          version="1.1"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          width="512"
+          height="512"
+          x="0"
+          y="0"
+          viewBox="0 0 512 512"
+          style="enable-background: new 0 0 512 512"
+          xml:space="preserve"
+          class=""
+        >
+          <g>
+            <path
+              d="M261.83 38c48.28 0 114.99 6.35 136.39 10.63.07.01.14.03.21.04 29.17 5.66 59.09 34.23 65.46 62.47 6.82 32.95 10.03 65.79 10.1 103.34-.07 37.54-3.28 70.39-10.1 103.34-6.37 28.23-36.29 56.81-65.46 62.47-.07.01-.14.03-.21.04-12.8 2.56-39.7 5.6-68.55 7.75a38.011 38.011 0 0 0-29.23 17.48c-3.45 5.41-7.13 11.09-10.95 16.88-12.69 19.22-23.94 35.2-33.49 47.6-9.55-12.4-20.8-28.38-33.49-47.6-3.82-5.79-7.51-11.47-10.95-16.88a37.995 37.995 0 0 0-29.23-17.48c-28.84-2.15-55.75-5.19-68.55-7.75-.07-.01-.14-.03-.21-.04-29.17-5.66-59.09-34.23-65.46-62.47-6.82-32.95-10.03-65.79-10.1-103.34.07-37.55 3.28-70.39 10.1-103.34 6.37-28.23 36.29-56.8 65.46-62.46.07-.01.14-.03.21-.04 21.41-4.28 88.11-10.63 136.39-10.63 1.84 0 3.64 0 5.41.03h.84c1.77-.02 3.57-.03 5.41-.03M250.17 0c-48.88 0-118.31 6.26-143.84 11.36-43.6 8.46-85.75 48.29-95.38 91.77C5.47 129.53.08 165.45 0 214.48c.08 49.03 5.47 84.94 10.95 111.34 9.63 43.48 51.78 83.31 95.38 91.77 14.34 2.87 42.55 6.1 73.17 8.38 3.47 5.45 7.23 11.25 11.3 17.4 16.25 24.61 28.69 41.76 38.11 53.71 7.84 9.94 17.47 14.91 27.09 14.91s19.25-4.97 27.09-14.91c9.42-11.95 21.85-29.1 38.11-53.71 4.07-6.16 7.82-11.95 11.3-17.4 30.63-2.28 58.83-5.51 73.18-8.38 43.6-8.46 85.75-48.29 95.38-91.77 5.48-26.4 10.87-62.31 10.95-111.34-.08-49.03-5.47-84.94-10.95-111.34-9.63-43.48-51.78-83.31-95.38-91.77C380.14 6.26 310.71 0 261.83 0c-1.98 0-3.92.01-5.83.03-1.9-.02-3.85-.03-5.83-.03z"
+              fill="#000000"
+              opacity="1"
+              data-original="#000000"
+            ></path>
+            <path
+              d="M284.28 363.63c-1.08 6.09-6.6 11.61-12.69 12.69-3.69.61-8.72 1.19-15.59 1.2-6.86 0-11.89-.58-15.59-1.2-6.09-1.08-11.61-6.6-12.69-12.69-.61-3.69-1.19-8.72-1.2-15.59 0-6.86.58-11.89 1.2-15.59 1.08-6.09 6.6-11.61 12.69-12.69 3.69-.61 8.72-1.19 15.59-1.2 6.86 0 11.89.58 15.59 1.2 6.09 1.08 11.61 6.6 12.69 12.69.61 3.69 1.19 8.72 1.2 15.59 0 6.86-.58 11.89-1.2 15.59zM254.96 288.4c-9.56 0-17.79-7.2-18.86-16.92-.14-1.32-1.31-13.27 2.36-27.59 5.23-20.39 17.53-35.92 35.57-44.88 33.02-16.42 35.58-34.98 35.58-40.28 0-3.96-1.56-12.6-7.39-19.85-7.82-9.71-21.36-14.63-40.25-14.63s-31.42 6.4-41.21 19.57c-7.32 9.84-9.65 19.74-9.67 19.83-2.17 10.27-12.25 16.83-22.52 14.65-10.27-2.17-16.83-12.26-14.65-22.52.38-1.81 4.1-18.16 16.35-34.64 11.84-15.92 33.89-34.9 71.71-34.9 67.75 0 85.65 47.41 85.65 72.47 0 13.87-5.52 48.88-56.66 74.3-19.56 9.72-17.11 34.04-17.08 34.28 1.15 10.43-6.37 19.82-16.8 20.97-.71.08-1.41.12-2.11.12z"
+              fill="#000000"
+              opacity="1"
+              data-original="#000000"
+            ></path>
+          </g>
+        </svg>
+        <h1>Plataforma de Dúvidas - Login e Cadastro</h1>
+      </div>
 
-  <script src="script.js"></script>
-</body>
+      <section class="card">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <div class="input-icon">
+            <svg
+              class="icon"
+              xmlns="http://www.w3.org/2000/svg"
+              version="1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="12"
+              height="12"
+              x="0"
+              y="0"
+              viewBox="0 0 512 512"
+              style="enable-background: new 0 0 512 512"
+              xml:space="preserve"
+              class=""
+            >
+              <g>
+                <path
+                  d="M467 76H45C20.137 76 0 96.262 0 121v270c0 24.885 20.285 45 45 45h422c24.655 0 45-20.03 45-45V121c0-24.694-20.057-45-45-45zm-6.302 30L287.82 277.967c-8.5 8.5-19.8 13.18-31.82 13.18s-23.32-4.681-31.848-13.208L51.302 106h409.396zM30 384.894V127.125L159.638 256.08 30 384.894zM51.321 406l129.587-128.763 22.059 21.943c14.166 14.166 33 21.967 53.033 21.967s38.867-7.801 53.005-21.939l22.087-21.971L460.679 406H51.321zM482 384.894 352.362 256.08 482 127.125v257.769z"
+                  fill="#000000"
+                  opacity="1"
+                  data-original="#000000"
+                ></path>
+              </g>
+            </svg>
+
+            <input id="loginEmail" type="email" placeholder="Email" required />
+          </div>
+
+          <div class="input-icon">
+
+            <svg
+              class="icon"
+              xmlns="http://www.w3.org/2000/svg"
+              version="1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="512"
+              height="512"
+              x="0"
+              y="0"
+              viewBox="0 0 401.998 401.998"
+              style="enable-background: new 0 0 512 512"
+              xml:space="preserve"
+              class=""
+            >
+              <g>
+                <path
+                  d="M357.45 190.721c-5.331-5.33-11.8-7.993-19.417-7.993h-9.131v-54.821c0-35.022-12.559-65.093-37.685-90.218C266.093 12.563 236.025 0 200.998 0c-35.026 0-65.1 12.563-90.222 37.688-25.126 25.126-37.685 55.196-37.685 90.219v54.821h-9.135c-7.611 0-14.084 2.663-19.414 7.993-5.33 5.326-7.994 11.799-7.994 19.417V374.59c0 7.611 2.665 14.086 7.994 19.417 5.33 5.325 11.803 7.991 19.414 7.991H338.04c7.617 0 14.085-2.663 19.417-7.991 5.325-5.331 7.994-11.806 7.994-19.417V210.135c.004-7.612-2.669-14.084-8.001-19.414zm-83.363-7.993H127.909v-54.821c0-20.175 7.139-37.402 21.414-51.675 14.277-14.275 31.501-21.411 51.678-21.411 20.179 0 37.399 7.135 51.677 21.411 14.271 14.272 21.409 31.5 21.409 51.675v54.821z"
+                  fill="#000000"
+                  opacity="1"
+                  data-original="#000000"
+                ></path>
+              </g>
+            </svg>
+            <input
+            id="loginPassword"
+            type="password"
+            placeholder="Senha"
+            required
+          />
+          </div>
+
+          <button type="submit">Entrar</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Cadastro</h2>
+        <form id="registerForm">
+          <div class="input-icon">
+            <input id="registerName" type="text" placeholder="Nome" required />
+          </div>
+
+          <div class="input-icon">
+            <svg
+              class="icon"
+              xmlns="http://www.w3.org/2000/svg"
+              version="1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="12"
+              height="12"
+              x="0"
+              y="0"
+              viewBox="0 0 512 512"
+              style="enable-background: new 0 0 512 512"
+              xml:space="preserve"
+              class=""
+            >
+              <g>
+                <path
+                  d="M467 76H45C20.137 76 0 96.262 0 121v270c0 24.885 20.285 45 45 45h422c24.655 0 45-20.03 45-45V121c0-24.694-20.057-45-45-45zm-6.302 30L287.82 277.967c-8.5 8.5-19.8 13.18-31.82 13.18s-23.32-4.681-31.848-13.208L51.302 106h409.396zM30 384.894V127.125L159.638 256.08 30 384.894zM51.321 406l129.587-128.763 22.059 21.943c14.166 14.166 33 21.967 53.033 21.967s38.867-7.801 53.005-21.939l22.087-21.971L460.679 406H51.321zM482 384.894 352.362 256.08 482 127.125v257.769z"
+                  fill="#000000"
+                  opacity="1"
+                  data-original="#000000"
+                ></path>
+              </g>
+            </svg>
+            <input
+              id="registerEmail"
+              type="email"
+              placeholder="Email"
+              required
+            />
+          </div>
+
+          <div class="input-icon">
+            <svg
+              class="icon"
+              xmlns="http://www.w3.org/2000/svg"
+              version="1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="512"
+              height="512"
+              x="0"
+              y="0"
+              viewBox="0 0 401.998 401.998"
+              style="enable-background: new 0 0 512 512"
+              xml:space="preserve"
+              class=""
+            >
+              <g>
+                <path
+                  d="M357.45 190.721c-5.331-5.33-11.8-7.993-19.417-7.993h-9.131v-54.821c0-35.022-12.559-65.093-37.685-90.218C266.093 12.563 236.025 0 200.998 0c-35.026 0-65.1 12.563-90.222 37.688-25.126 25.126-37.685 55.196-37.685 90.219v54.821h-9.135c-7.611 0-14.084 2.663-19.414 7.993-5.33 5.326-7.994 11.799-7.994 19.417V374.59c0 7.611 2.665 14.086 7.994 19.417 5.33 5.325 11.803 7.991 19.414 7.991H338.04c7.617 0 14.085-2.663 19.417-7.991 5.325-5.331 7.994-11.806 7.994-19.417V210.135c.004-7.612-2.669-14.084-8.001-19.414zm-83.363-7.993H127.909v-54.821c0-20.175 7.139-37.402 21.414-51.675 14.277-14.275 31.501-21.411 51.678-21.411 20.179 0 37.399 7.135 51.677 21.411 14.271 14.272 21.409 31.5 21.409 51.675v54.821z"
+                  fill="#000000"
+                  opacity="1"
+                  data-original="#000000"
+                ></path>
+              </g>
+            </svg>
+            <input
+              id="registerPassword"
+              type="password"
+              placeholder="Senha"
+              required
+            />
+          </div>
+
+          <button type="submit">Cadastrar</button>
+        </form>
+      </section>
+    </main>
+
+    <section class="features">
+      <h2>Por que escolher nossa plataforma?</h2>
+      <div class="features-grid">
+        <div class="feature">
+          <h3>🔄 Constantes atualições</h3>
+          <p>
+            Nossa plataforma está sempre evoluindo para melhor atender suas
+            necessidades.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>⚙️ Fácil de Usar</h3>
+          <p>
+            Interface simples e intuitiva para focar apenas no que importa:
+            aprender.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>📈 Crescimento Constante</h3>
+          <p>
+            Aprenda ao ensinar e fortaleça seu conhecimento enquanto ajuda
+            outros.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <script src="loginRegister.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>

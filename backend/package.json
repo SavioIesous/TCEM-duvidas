@@ -9,5 +9,8 @@
     "express": "^4.19.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   }
 }

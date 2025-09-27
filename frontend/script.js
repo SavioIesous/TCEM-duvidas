@@ -136,7 +136,7 @@ function createDuvidaElement(d) {
       String(rAuthorId) === String(loggedUserId)
     ) {
       const delReplyBtn = document.createElement("button");
-      delReplyBtn.textContent = "Excluir resposta";
+      delReplyBtn.innerHTML = `Excluir resposta <i class="fi fi-rr-trash"></i> `;
       delReplyBtn.className = "delete-reply-btn";
       delReplyBtn.addEventListener("click", async () => {
         if (!confirm("Deseja excluir esta resposta?")) return;
