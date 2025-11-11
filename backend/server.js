@@ -4,6 +4,9 @@ import mongoose from "mongoose";
 import duvidasRoutes from "./routes/duvidas.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
@@ -12,13 +15,14 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-mongoose.connect("mongodb+srv://rodriguessavio68_db_user:savio497@cluster0.zwvuyto.mongodb.net/duvidasDB?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB conectado");
-    console.log("DB name:", mongoose.connection.name);
-    console.log("Hosts:", mongoose.connection.host, mongoose.connection.port);
+    console.log(`DB name: ${mongoose.connection.name}`);
   })
-  .catch(err => console.log("❌ Erro ao conectar MongoDB:", err));
+  .catch((err) => {
+    console.error("❌ Erro ao conectar MongoDB:", err);
+  });
 
 app.use("/duvidas", duvidasRoutes);
 
