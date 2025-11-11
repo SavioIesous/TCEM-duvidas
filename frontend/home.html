@@ -24,15 +24,12 @@
             <ul>
               <li><a href="#">Início</a></li>
               <li><a href="#">Perguntas</a></li>
-              <li><a href="#">Tags</a></li>
+              <li><a href="tags">Tags</a></li>
               <li><a href="#">Usuários</a></li>
               <li><a href="#">Sobre</a></li>
             </ul>
           </nav>
 
-          <div class="search-icon">
-            <img class="search-icon-img" src="./icons/search.png" alt="Lupa">
-          </div>
           <div class="search-container">
   <img src="./icons/search.png" alt="Lupa" class="search-icon">
   <input type="text" placeholder="Buscar dúvidas...">
@@ -77,18 +74,66 @@
     </header>
 
     <main class="container">
-      <section class="card post-area">
-        <h2>Postar Dúvida</h2>
-        <input id="title" type="text" placeholder="Digite o título" />
-        <textarea id="description" placeholder="Digite a descrição"></textarea>
-        <button id="btnEnviar">Enviar</button>
-      </section>
+  <!-- Sidebar lateral -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3>Ações Rápidas</h3>
+      <button class="btn-acao" id="btnFazerPergunta">+ Fazer Pergunta</button>
+      <button class="btn-acao" id="btnMinhasPerguntas">Minhas Perguntas</button>
+      <button class="btn-acao" id="btnFavoritos">Favoritos</button>
+    </div>
 
-      <section class="card">
-        <h2>Dúvidas</h2>
-        <div id="duvidas" class="duvidas-list"></div>
-      </section>
-    </main>
+    <div class="sidebar-section">
+      <h3>Tags Populares</h3>
+      <div class="tags">
+        <span class="tag">Ciências</span>
+        <span class="tag">Programação</span>
+        <span class="tag">Matemática</span>
+        <span class="tag">Português</span>
+        <span class="tag">Geografia</span>
+        <span class="tag">História</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Estatísticas</h3>
+      <ul class="stats">
+        <li>Perguntas: <strong>1</strong></li>
+        <li>Respostas: <strong>1</strong></li>
+        <li>Usuários: <strong>3</strong></li>
+        <li>Tags: <strong>6</strong></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Conteúdo principal -->
+  <section class="content">
+    <section class="card post-area">
+  <h2>Postar Dúvida</h2>
+  <input id="title" type="text" placeholder="Digite o título" />
+  <textarea id="description" placeholder="Digite a descrição"></textarea>
+
+  <select id="tag">
+    <option value="">Selecione uma tag</option>
+    <option value="Ciências">Ciências</option>
+    <option value="Programação">Programação</option>
+    <option value="Matemática">Matemática</option>
+    <option value="Português">Português</option>
+    <option value="Geografia">Geografia</option>
+    <option value="História">História</option>
+  </select>
+
+  <button id="btnEnviar">Enviar</button>
+</section>
+
+
+    <section class="card">
+      <h2>Dúvidas    |   Mais recentes | Mais votadas | Sem respostas</h2>
+      <div id="duvidas" class="duvidas-list"></div>
+    </section>
+  </section>
+</main>
+
 
     <script src="script.js"></script>
   </body>

@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import Notification from "../models/notification.js";
 
 const router = express.Router();
 
@@ -32,7 +33,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-
 // LOGIN 
 router.post("/login", async (req, res) => {
   const { email, senha } = req.body;
@@ -58,6 +58,89 @@ router.get("/validate", (req, res) => {
     res.sendStatus(200);
   } catch (err) {
     res.status(401).json({ error: "Token inválido" });
+  }
+});
+
+// OBTER DADOS DO USUÁRIO
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-senha");
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar usuário" });
+  }
+});
+
+// ATUALIZAR PERFIL
+router.put("/profile", verifyToken, async (req, res) => {
+  try {
+    const { name, senha } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "O nome é obrigatório." });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+    user.name = name.trim();
+
+    if (senha && senha.trim()) {
+      const hash = await bcrypt.hash(senha.trim(), 10);
+      user.senha = hash;
+    }
+
+    await user.save();
+    res.json({ message: "Perfil atualizado com sucesso!" });
+  } catch (err) {
+    console.error("Erro ao atualizar perfil:", err);
+    res.status(500).json({ error: "Erro ao atualizar perfil" });
+  }
+});
+
+// OBTER NOTIFICAÇÕES NÃO LIDAS
+router.get("/notifications", verifyToken, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ 
+      userId: req.user.id,
+      read: false 
+    })
+    .sort({ createdAt: -1 })
+    .limit(20);
+
+    res.json(notifications);
+  } catch (err) {
+    console.error("Erro ao buscar notificações:", err);
+    res.status(500).json({ error: "Erro ao buscar notificações" });
+  }
+});
+
+// MARCAR NOTIFICAÇÕES COMO LIDAS
+router.post("/notifications/mark-read", verifyToken, async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.user.id, read: false },
+      { read: true }
+    );
+    res.json({ message: "Notificações marcadas como lidas" });
+  } catch (err) {
+    console.error("Erro ao marcar notificações:", err);
+    res.status(500).json({ error: "Erro ao marcar notificações" });
+  }
+});
+
+// CONTAR NOTIFICAÇÕES NÃO LIDAS
+router.get("/notifications/count", verifyToken, async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({ 
+      userId: req.user.id,
+      read: false 
+    });
+    res.json({ count });
+  } catch (err) {
+    console.error("Erro ao contar notificações:", err);
+    res.status(500).json({ error: "Erro ao contar notificações" });
   }
 });
  

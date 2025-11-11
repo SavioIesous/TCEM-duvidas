@@ -13,7 +13,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 mongoose.connect("mongodb+srv://rodriguessavio68_db_user:savio497@cluster0.zwvuyto.mongodb.net/duvidasDB?retryWrites=true&w=majority&appName=Cluster0")
-  .then(() => console.log("✅ MongoDB conectado"))
+  .then(() => {
+    console.log("✅ MongoDB conectado");
+    console.log("DB name:", mongoose.connection.name);
+    console.log("Hosts:", mongoose.connection.host, mongoose.connection.port);
+  })
   .catch(err => console.log("❌ Erro ao conectar MongoDB:", err));
 
 app.use("/duvidas", duvidasRoutes);

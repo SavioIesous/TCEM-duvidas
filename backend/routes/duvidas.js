@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import { verifyToken } from "./auth.js";
+import Notification from "../models/notification.js";
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ const ReplySchema = new mongoose.Schema({
 
 const DuvidaSchema = new mongoose.Schema({
   title: { type: String, required: true },
+  tag: { type: String, default: null },
   author: { type: String, default: "Anônimo" },
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,33 +32,44 @@ const DuvidaSchema = new mongoose.Schema({
 
 const Duvida = mongoose.model("Duvida", DuvidaSchema);
 
+// GET /duvidas
 router.get("/", async (req, res) => {
   try {
-    const duvidas = await Duvida.find();
+    const duvidas = await Duvida.find().lean().sort({ createdAt: -1 });
+    console.log("GET /duvidas -> enviando", duvidas.length, "documentos");
     res.json(duvidas);
   } catch (err) {
-    console.error("Erro ao buscar dúvidas:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao buscar dúvidas", details: err.message });
+    console.error("Erro em GET /duvidas:", err);
+    res.status(500).json({ error: "Erro ao buscar dúvidas" });
   }
 });
 
+// POST /duvidas
 router.post("/", verifyToken, async (req, res) => {
   try {
-    console.log("Corpo recebido:", req.body);
-    const { title, description, author } = req.body;
+    const { title, description, author, tag } = req.body;
+    console.log("POST /duvidas -> req.body:", req.body);
+
     const user = await mongoose.model("User").findById(req.user.id);
+
+    const tagClean =
+      typeof tag === "string" && tag.trim().length > 0 ? tag.trim() : null;
 
     const novaDuvida = new Duvida({
       title,
       description,
+      tag: tagClean,
       author: author || user?.name || "Anônimo",
       authorId: req.user.id,
     });
 
-    await novaDuvida.save();
-    res.status(201).json(novaDuvida);
+    const saved = await novaDuvida.save();
+    console.log("POST /duvidas -> saved (raw from save):", saved);
+
+    const savedFromDb = await Duvida.findById(saved._id).lean();
+    console.log("POST /duvidas -> fetched from DB:", savedFromDb);
+
+    return res.status(201).json(savedFromDb);
   } catch (err) {
     console.error("Erro ao criar dúvida:", err);
     res
@@ -65,6 +78,7 @@ router.post("/", verifyToken, async (req, res) => {
   }
 });
 
+// POST /duvidas/:id/respostas
 router.post("/:id/respostas", verifyToken, async (req, res) => {
   try {
     const duvidaId = req.params.id;
@@ -90,6 +104,23 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
 
     const savedReply = duvida.replies[duvida.replies.length - 1];
 
+    // Criar notificação se a resposta não for do próprio autor da dúvida
+    if (duvida.authorId && String(duvida.authorId) !== String(req.user.id)) {
+      try {
+        const notification = new Notification({
+          userId: duvida.authorId,
+          duvidaId: duvida._id,
+          duvidaTitle: duvida.title,
+          authorId: req.user.id,
+          authorName: user?.name || "Anônimo",
+        });
+        await notification.save();
+        console.log("Notificação criada para usuário:", duvida.authorId);
+      } catch (notifErr) {
+        console.error("Erro ao criar notificação:", notifErr);
+      }
+    }
+
     res.status(201).json(savedReply);
   } catch (err) {
     console.error("Erro ao adicionar resposta:", err);
@@ -99,6 +130,7 @@ router.post("/:id/respostas", verifyToken, async (req, res) => {
   }
 });
 
+// DELETE /duvidas/:id
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const duvidaId = req.params.id;
@@ -116,6 +148,10 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 
     await duvida.deleteOne();
+    
+    // Deletar notificações relacionadas a esta dúvida
+    await Notification.deleteMany({ duvidaId: duvidaId });
+    
     res.json({ message: "Dúvida excluída com sucesso" });
   } catch (err) {
     console.error("Erro ao excluir dúvida:", err);
@@ -125,6 +161,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 });
 
+// DELETE /duvidas/:id/respostas/:replyId
 router.delete("/:id/respostas/:replyId", verifyToken, async (req, res) => {
   try {
     const { id: duvidaId, replyId } = req.params;
