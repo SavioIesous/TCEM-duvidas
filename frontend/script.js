@@ -591,6 +591,54 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    
+    if (mobileMenuToggle && mobileMenu) {
+      mobileMenuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        mobileMenu.classList.toggle("active");
+      });
+      
+      // Fechar menu mobile ao clicar fora
+      document.addEventListener("click", (e) => {
+        if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+          mobileMenu.classList.remove("active");
+        }
+      });
+    }
+
+    // Mobile Menu - Notificações
+    const btnNotificationsMobile = document.getElementById("btnNotificationsMobile");
+    if (btnNotificationsMobile && notificationsModal) {
+      btnNotificationsMobile.addEventListener("click", async () => {
+        notificationsModal.style.display = "flex";
+        await carregarNotificacoes();
+        if (mobileMenu) mobileMenu.classList.remove("active");
+      });
+    }
+
+    // Mobile Menu - Perfil
+    const btnProfileMobile = document.getElementById("btnProfileMobile");
+    if (btnProfileMobile && profileModal) {
+      btnProfileMobile.addEventListener("click", async () => {
+        profileModal.style.display = "flex";
+        await carregarDadosPerfil();
+        if (mobileMenu) mobileMenu.classList.remove("active");
+      });
+    }
+
+    // Mobile Menu - Logout
+    const btnLogoutMobile = document.getElementById("btnLogoutMobile");
+    if (btnLogoutMobile) {
+      btnLogoutMobile.addEventListener("click", () => {
+        if (mobileMenu) mobileMenu.classList.remove("active");
+        logout();
+      });
+    }
+
+
     // Carregar dúvidas e atualizar badge de notificações
     await carregarDuvidas();
     await atualizarBadgeNotificacoes();
@@ -786,6 +834,7 @@ async function atualizarBadgeNotificacoes() {
     if (res.ok) {
       const data = await res.json();
       const badge = document.getElementById("notificationBadge");
+      const badgeMobile = document.getElementById("notificationBadgeMobile");
       
       if (badge) {
         if (data.count > 0) {
@@ -793,6 +842,15 @@ async function atualizarBadgeNotificacoes() {
           badge.style.display = "block";
         } else {
           badge.style.display = "none";
+          }
+      }
+      
+      if (badgeMobile) {
+        if (data.count > 0) {
+          badgeMobile.textContent = data.count;
+          badgeMobile.style.display = "block";
+        } else {
+          badgeMobile.style.display = "none";
         }
       }
     }
