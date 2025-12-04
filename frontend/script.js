@@ -1,4 +1,4 @@
-const API = "https://tcem-duvidas-backend.onrender.com"; // Altere para o URL do seu backend se necessário
+const API = "https://perguntai-nvid.onrender.com";
 
 function escapeHtml(text) {
   if (!text) return "";
@@ -432,7 +432,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     if (btnFazerPergunta && postArea) {
       btnFazerPergunta.addEventListener("click", () => {
-        postArea.style.display = postArea.style.display === "none" ? "block" : "none";
+       const isHidden = postArea.style.display === "none";
+        postArea.style.display = isHidden ? "block" : "none";
+        
+        // Auto-scroll para a área de postar dúvida em mobile
+        if (isHidden) {
+          setTimeout(() => {
+            postArea.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
+        }
       });
     }
 

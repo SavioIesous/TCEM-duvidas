@@ -1,7 +1,8 @@
-Buscar dúvidas
-Mudar da RENDER para VERCEL
-Melhorar mobile :
-    Alguma solução para quando apertar o botão de + FAZER DUVIDA der para ver a DIV aparecendo
+Criar um novo serviço com o nome Perguntaí na RENDER
 Adicionar no footer: 
     Botão de contato para ir para meu contato;
-    "Central de ajuda" ir para a página de sobre ( Criar ela depois )
+
+copiar as coisas do lovable.dev
+parei no : article class="about-article">
+      section class="about-section"
+        h2 O Projeto/h2
