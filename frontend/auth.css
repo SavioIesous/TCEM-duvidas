@@ -19,6 +19,13 @@ body {
   position: relative;
 }
 
+.logoLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* LOGIN PAGE */
 .login-page {
   display: flex;
@@ -295,6 +302,31 @@ body {
   height: 20px;
   color: #9ca3af;
   pointer-events: none;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: #667eea;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
 }
 
 .form-group input,
@@ -873,6 +905,7 @@ body {
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
+  position: fixed;
 }
 
 .container-header {
@@ -1057,12 +1090,14 @@ body {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 30px;
+  margin-top: 120px;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: 20px;
+    min-width: 0;
 }
 
 .sidebar-section {
@@ -1070,6 +1105,8 @@ body {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-width: 100%;
+  overflow: hidden;
 }
 
 .sidebar-section h3 {
@@ -1214,6 +1251,10 @@ body {
   border-radius: 10px;
   padding: 20px;
   transition: border-color 0.3s;
+    max-width: 100%;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .duvida-card:hover {
@@ -1224,6 +1265,8 @@ body {
   font-size: 18px;
   color: #333;
   margin-bottom: 12px;
+    word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .meta {
@@ -1436,10 +1479,43 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+        margin-left: auto;
   }
 
   .desktop-only {
     display: none !important;
+      }
+  
+  .sidebar-section {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .tags {
+    max-width: 100%;
+      }
+  
+  .content {
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  .duvida-card {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .reply-area {
+    flex-direction: column;
+  }
+  
+  .reply-text {
+    width: 100%;
+  }
+  
+  .desc {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   
   .modal-content {
@@ -1732,6 +1808,10 @@ body {
 @media (max-width: 768px) {
   .about-hero h1 {
     font-size: 32px;
+  }
+
+  .container {
+  margin-top: 180px;
   }
 
   .about-subtitle {
