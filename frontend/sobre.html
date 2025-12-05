@@ -55,18 +55,16 @@
       <section class="about-section">
         <h2>🎓 O Projeto</h2>
         <p>O <strong>Perguntaí</strong> é um projeto desenvolvido para o <strong>TCEM (Trabalho de Conclusão do Ensino Médio)</strong> da escola. A ideia surgiu da necessidade de criar um espaço onde estudantes pudessem compartilhar conhecimento e ajudar uns aos outros de forma organizada e eficiente.</p>
-      </div>
+      </section>
 
-      <div class="about-card">
-        <div class="about-icon">🎯</div>
-        <h2>Objetivo</h2>
+      <section class="about-section">
+        <h2>🎯 Objetivo</h2>
         <p>O principal objetivo do Perguntaí é <strong>facilitar a troca de conhecimento entre estudantes</strong>. A plataforma permite que usuários postem dúvidas sobre diversas matérias e recebam respostas de outros membros da comunidade, criando um ambiente colaborativo de aprendizado.</p>
-      </div>
+      </section>
 
-      <div class="about-card">
-        <div class="about-icon">⚙️</div>
-        <h2>Funcionalidades</h2>
-        <ul class="features-list">
+      <section class="about-section">
+        <h2>⚙️ Funcionalidades</h2>
+        <ul class="about-features-list">
           <li>📝 <strong>Postar dúvidas</strong> - Crie perguntas sobre qualquer assunto acadêmico</li>
           <li>🏷️ <strong>Sistema de tags</strong> - Organize dúvidas por matérias (Ciências, Programação, Matemática, Português, Geografia, História)</li>
           <li>💬 <strong>Respostas</strong> - Responda dúvidas de outros usuários e ajude a comunidade</li>
@@ -74,11 +72,10 @@
           <li>🔍 <strong>Busca e filtros</strong> - Encontre rapidamente o que procura</li>
           <li>👤 <strong>Perfil personalizado</strong> - Gerencie suas informações de conta</li>
         </ul>
-      </div>
+      </section>
 
-      <div class="about-card">
-        <div class="about-icon">💻</div>
-        <h2>Tecnologias Utilizadas</h2>
+      <section class="about-section">
+        <h2>💻 Tecnologias Utilizadas</h2>
         <div class="tech-tags">
           <span class="tech-tag">HTML5</span>
           <span class="tech-tag">CSS3</span>
@@ -89,17 +86,41 @@
         </div>
       </div>
 
-      <div class="about-card">
-        <div class="about-icon">🤝</div>
-        <h2>Comunidade</h2>
-        <p>Acreditamos que o conhecimento cresce quando é compartilhado. Por isso, incentivamos todos os usuários a participarem ativamente, tanto fazendo perguntas quanto ajudando outros estudantes com suas respostas. Juntos, podemos criar uma comunidade de aprendizado forte e colaborativa!</p>
-      </div>
-    </section>
+      </section>
 
-    <section class="about-cta">
+      <section class="about-section">
+        <h2>🤝 Comunidade</h2>
+        <p>Acreditamos que o conhecimento cresce quando é compartilhado. Por isso, incentivamos todos os usuários a participarem ativamente, tanto fazendo perguntas quanto ajudando outros estudantes com suas respostas. Juntos, podemos criar uma comunidade de aprendizado forte e colaborativa!</p>
+      </section>
+
+      <section class="about-section about-contact">
+        <h2>📧 Entre em Contato</h2>
+        <p>Tem alguma dúvida, sugestão ou feedback? Envie uma mensagem!</p>
+        <form class="contact-form" action="https://formsubmit.co/seuemail@exemplo.com" method="POST">
+          <input type="hidden" name="_subject" value="Contato do Tag Your Ask">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="sobre.html">
+          <div class="form-group">
+            <label for="contactName">Seu nome</label>
+            <input type="text" id="contactName" name="name" placeholder="Digite seu nome" required>
+          </div>
+          <div class="form-group">
+            <label for="contactEmail">Seu email</label>
+            <input type="email" id="contactEmail" name="email" placeholder="seu@email.com" required>
+          </div>
+          <div class="form-group">
+            <label for="contactMessage">Mensagem</label>
+            <textarea id="contactMessage" name="message" rows="4" placeholder="Escreva sua mensagem..." required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Enviar Mensagem</button>
+        </form>
+      </section>
+    </article>
+
+    <section class="about-cta-simple">
       <h2>Pronto para começar?</h2>
       <p>Entre agora e faça parte da nossa comunidade de aprendizado!</p>
-      <a href="home.html" class="btn-primary cta-btn">Ir para o Dashboard</a>
+      <button onclick="irParaDashboard()" class="btn-primary cta-btn">Ir para o Dashboard</button>
     </section>
   </main>
 
@@ -116,13 +137,14 @@
         </div>
         <div class="footer-links">
           <h4>Navegação</h4>
+          <a href="#" onclick="irParaDashboard(); return false;">Dashboard</a>
           <a href="sobre.html">Sobre</a>
           <a href="index.html">Login</a>
         </div>
         <div class="footer-links">
           <h4>Suporte</h4>
-          <a href="sobre.html">Central de Ajuda</a>
-          <a href="mailto:seuemail@exemplo.com">Contato</a>
+          <a href="#contactName" onclick="document.getElementById('contactName').focus();">Central de Ajuda</a>
+          <a href="#contactName" onclick="document.getElementById('contactName').focus();">📧 Contato</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -147,6 +169,17 @@
           mobileMenu.classList.remove("active");
         }
       });
+          }
+
+    // Verificar login antes de ir para o dashboard
+    function irParaDashboard() {
+      const token = localStorage.getItem("token");
+      if (token) {
+        window.location.href = "home.html";
+      } else {
+        alert("Você precisa fazer login para acessar o Dashboard!");
+        window.location.href = "index.html";
+      }
     }
   </script>
 </body>
