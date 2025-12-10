@@ -96,10 +96,9 @@
       <section class="about-section about-contact">
         <h2>📧 Entre em Contato</h2>
         <p>Tem alguma dúvida, sugestão ou feedback? Envie uma mensagem!</p>
-        <form class="contact-form" action="https://formsubmit.co/savioiesous44@gmail.com" method="POST">
+       <form id="contactForm" class="contact-form">
           <input type="hidden" name="_subject" value="Contato do Tag Your Ask">
           <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_next" value="sobre.html">
           <div class="form-group">
             <label for="contactName">Seu nome</label>
             <input type="text" id="contactName" name="name" placeholder="Digite seu nome" required>
@@ -113,6 +112,9 @@
             <textarea id="contactMessage" name="message" rows="4" placeholder="Escreva sua mensagem..." required></textarea>
           </div>
           <button type="submit" class="btn-primary">Enviar Mensagem</button>
+          <p id="successMessage" style="display: none; color: green; margin-top: 10px;">
+  ✔ Sua mensagem foi enviada com sucesso!
+</p>
         </form>
       </section>
     </article>
@@ -181,6 +183,31 @@
         window.location.href = "index.html";
       }
     }
+
+      const form = document.getElementById("contactForm");
+  const successMessage = document.getElementById("successMessage");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); // Impede o envio tradicional
+
+    const data = new FormData(form);
+
+    // Campos adicionais do FormSubmit
+    data.append("_subject", "Contato do Tag Your Ask");
+    data.append("_captcha", "false");
+
+    const response = await fetch("https://formsubmit.co/savioiesous44@gmail.com", {
+      method: "POST",
+      body: data
+    });
+
+    if (response.ok) {
+      form.reset(); // limpa o formulário
+      successMessage.style.display = "block"; // mostra o aviso
+    } else {
+      alert("Erro ao enviar. Tente novamente.");
+    }
+  });
   </script>
 </body>
 </html>
