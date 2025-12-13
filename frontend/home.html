@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perguntaí</title>
+  <meta name="description" content="Perguntas e respostas organizadas por tags">
+  <link rel="icon" type="image/x-icon" href="icons/logo.png">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container-header">
+      <div class="brand">
+        <a href="home.html" class="logoLink"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40">
+          <path d="M261.83 38c48.28 0 114.99 6.35 136.39 10.63.07.01.14.03.21.04 29.17 5.66 59.09 34.23 65.46 62.47 6.82 32.95 10.03 65.79 10.1 103.34-.07 37.54-3.28 70.39-10.1 103.34-6.37 28.23-36.29 56.81-65.46 62.47-.07.01-.14.03-.21.04-12.8 2.56-39.7 5.6-68.55 7.75a38.011 38.011 0 0 0-29.23 17.48c-3.45 5.41-7.13 11.09-10.95 16.88-12.69 19.22-23.94 35.2-33.49 47.6-9.55-12.4-20.8-28.38-33.49-47.6-3.82-5.79-7.51-11.47-10.95-16.88a37.995 37.995 0 0 0-29.23-17.48c-28.84-2.15-55.75-5.19-68.55-7.75-.07-.01-.14-.03-.21-.04-29.17-5.66-59.09-34.23-65.46-62.47-6.82-32.95-10.03-65.79-10.1-103.34.07-37.55 3.28-70.39 10.1-103.34 6.37-28.23 36.29-56.8 65.46-62.46.07-.01.14-.03.21-.04 21.41-4.28 88.11-10.63 136.39-10.63 1.84 0 3.64 0 5.41.03h.84c1.77-.02 3.57-.03 5.41-.03M250.17 0c-48.88 0-118.31 6.26-143.84 11.36-43.6 8.46-85.75 48.29-95.38 91.77C5.47 129.53.08 165.45 0 214.48c.08 49.03 5.47 84.94 10.95 111.34 9.63 43.48 51.78 83.31 95.38 91.77 14.34 2.87 42.55 6.1 73.17 8.38 3.47 5.45 7.23 11.25 11.3 17.4 16.25 24.61 28.69 41.76 38.11 53.71 7.84 9.94 17.47 14.91 27.09 14.91s19.25-4.97 27.09-14.91c9.42-11.95 21.85-29.1 38.11-53.71 4.07-6.16 7.82-11.95 11.3-17.4 30.63-2.28 58.83-5.51 73.18-8.38 43.6-8.46 85.75-48.29 95.38-91.77 5.48-26.4 10.87-62.31 10.95-111.34-.08-49.03-5.47-84.94-10.95-111.34-9.63-43.48-51.78-83.31-95.38-91.77C380.14 6.26 310.71 0 261.83 0c-1.98 0-3.92.01-5.83.03-1.9-.02-3.85-.03-5.83-.03z" fill="currentColor"/>
+          <path d="M284.28 363.63c-1.08 6.09-6.6 11.61-12.69 12.69-3.69.61-8.72 1.19-15.59 1.2-6.86 0-11.89-.58-15.59-1.2-6.09-1.08-11.61-6.6-12.69-12.69-.61-3.69-1.19-8.72-1.2-15.59 0-6.86.58-11.89 1.2-15.59 1.08-6.09 6.6-11.61 12.69-12.69 3.69-.61 8.72-1.19 15.59-1.2 6.86 0 11.89.58 15.59 1.2 6.09 1.08 11.61 6.6 12.69 12.69.61 3.69 1.19 8.72 1.2 15.59 0 6.86-.58 11.89-1.2 15.59zM254.96 288.4c-9.56 0-17.79-7.2-18.86-16.92-.14-1.32-1.31-13.27 2.36-27.59 5.23-20.39 17.53-35.92 35.57-44.88 33.02-16.42 35.58-34.98 35.58-40.28 0-3.96-1.56-12.6-7.39-19.85-7.82-9.71-21.36-14.63-40.25-14.63s-31.42 6.4-41.21 19.57c-7.32 9.84-9.65 19.74-9.67 19.83-2.17 10.27-12.25 16.83-22.52 14.65-10.27-2.17-16.83-12.26-14.65-22.52.38-1.81 4.1-18.16 16.35-34.64 11.84-15.92 33.89-34.9 71.71-34.9 67.75 0 85.65 47.41 85.65 72.47 0 13.87-5.52 48.88-56.66 74.3-19.56 9.72-17.11 34.04-17.08 34.28 1.15 10.43-6.37 19.82-16.8 20.97-.71.08-1.41.12-2.11.12z" fill="currentColor"/>
+        </svg>
+        <h2>Perguntaí</h2></a>
+      </div>
+
+      <div class="search-container">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Buscar dúvidas...">
+      </div>
+      <!-- Mobile Menu Toggle -->
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Desktop Actions -->
+      <div class="header-actions desktop-only">
+        <a href="sobre.html" class="btn-icon" title="Sobre">Sobre</a>
+        <button id="btnNotifications" class="btn-icon" title="Notificações">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span id="notificationBadge" class="notification-badge" style="display:none;">0</span>
+        </button>
+        
+        <button id="btnProfile" class="btn-icon" title="Editar Perfil">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </button>
+        
+        <button id="btnLogout" class="btn-logout">Sair</button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+      <button id="btnNotificationsMobile" class="mobile-menu-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span>Notificações</span>
+        <span id="notificationBadgeMobile" class="notification-badge" style="display:none;">0</span>
+      </button>
+      
+      <button id="btnProfileMobile" class="mobile-menu-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Editar Perfil</span>
+      </button>
+
+      <!-- crie um svg para o link de sobre
+        -->
+        <a href="sobre.html" class="mobile-menu-item" title="Sobre">Sobre</a>
+      
+      <button id="btnLogoutMobile" class="mobile-menu-item logout">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Sair</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3>Ações Rápidas</h3>
+        <button class="btn-action" id="btnFazerPergunta">+ Fazer Pergunta</button>
+        <button class="btn-action secondary" id="btnSemRespostas">🔍 Sem Respostas</button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Tags Populares</h3>
+        <div class="tags">
+          <button class="tag" data-tag="Ciências">Ciências</button>
+          <button class="tag" data-tag="Programação">Programação</button>
+          <button class="tag" data-tag="Matemática">Matemática</button>
+          <button class="tag" data-tag="Português">Português</button>
+          <button class="tag" data-tag="Geografia">Geografia</button>
+          <button class="tag" data-tag="História">História</button>
+          <button class="tag" data-tag="Redação">Redação</button>
+          <button class="tag" data-tag="Inglês">Inglês</button>
+          <button class="tag" data-tag="Outras">Outras</button>
+        </div>
+        <button class="btn-clear-filter" id="btnClearFilter" style="display:none;">Limpar Filtro</button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Estatísticas</h3>
+        <ul class="stats">
+          <li>Perguntas: <strong id="statPerguntas">0</strong></li>
+          <li>Respostas: <strong id="statRespostas">0</strong></li>
+        </ul>
+      </div>
+    </aside>
+
+    <section class="content">
+      <section class="card post-area" style="display:none;">
+        <h2>Postar Dúvida</h2>
+        <form id="formDuvida">
+          <div class="form-group">
+            <label for="title">Título</label>
+            <input id="title" type="text" placeholder="Digite o título da sua dúvida" required>
+          </div>
+          <div class="form-group">
+            <label for="description">Descrição</label>
+            <textarea id="description" placeholder="Descreva sua dúvida em detalhes" rows="4" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="tag">Tag (obrigatório)</label>
+            <select id="tag" required>
+              <option value="">Selecione uma tag</option>
+              <option value="Ciências">Ciências</option>
+              <option value="Programação">Programação</option>
+              <option value="Matemática">Matemática</option>
+              <option value="Português">Português</option>
+              <option value="Geografia">Geografia</option>
+              <option value="História">História</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary">Enviar Dúvida</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Dúvidas</h2>
+          <div class="filter-info" id="filterInfo" style="display:none;"></div>
+        </div>
+        <div id="duvidas" class="duvidas-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Modal de Editar Perfil -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Perfil</h2>
+        <button class="modal-close" id="closeProfile">&times;</button>
+      </div>
+      <form id="formProfile">
+        <div class="form-group">
+          <label for="profileName">Nome</label>
+          <input id="profileName" type="text" placeholder="Seu nome" required>
+        </div>
+        <div class="form-group">
+          <label for="profileSenha">Nova Senha (deixe em branco para manter)</label>
+          <div class="input-wrapper" style="padding-left: 0;">
+            <input id="profileSenha" type="password" placeholder="Nova senha (opcional)" style="padding-left: 16px;">
+            <button type="button" class="password-toggle" data-target="profileSenha" aria-label="Mostrar senha">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="profileEmail">Email (atual)</label>
+          <input id="profileEmail" type="email" disabled>
+        </div>
+        <button type="submit" class="btn-primary">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Notificações -->
+  <div id="notificationsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Notificações</h2>
+        <button class="modal-close" id="closeNotifications">&times;</button>
+      </div>
+      <div id="notificationsList" class="notifications-list">
+        <p class="small-muted">Carregando notificações...</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <svg class="footer-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40">
+            <path d="M261.83 38c48.28 0 114.99 6.35 136.39 10.63.07.01.14.03.21.04 29.17 5.66 59.09 34.23 65.46 62.47 6.82 32.95 10.03 65.79 10.1 103.34-.07 37.54-3.28 70.39-10.1 103.34-6.37 28.23-36.29 56.81-65.46 62.47-.07.01-.14.03-.21.04-12.8 2.56-39.7 5.6-68.55 7.75a38.011 38.011 0 0 0-29.23 17.48c-3.45 5.41-7.13 11.09-10.95 16.88-12.69 19.22-23.94 35.2-33.49 47.6-9.55-12.4-20.8-28.38-33.49-47.6-3.82-5.79-7.51-11.47-10.95-16.88a37.995 37.995 0 0 0-29.23-17.48c-28.84-2.15-55.75-5.19-68.55-7.75-.07-.01-.14-.03-.21-.04-29.17-5.66-59.09-34.23-65.46-62.47-6.82-32.95-10.03-65.79-10.1-103.34.07-37.55 3.28-70.39 10.1-103.34 6.37-28.23 36.29-56.8 65.46-62.46.07-.01.14-.03.21-.04 21.41-4.28 88.11-10.63 136.39-10.63 1.84 0 3.64 0 5.41.03h.84c1.77-.02 3.57-.03 5.41-.03M250.17 0c-48.88 0-118.31 6.26-143.84 11.36-43.6 8.46-85.75 48.29-95.38 91.77C5.47 129.53.08 165.45 0 214.48c.08 49.03 5.47 84.94 10.95 111.34 9.63 43.48 51.78 83.31 95.38 91.77 14.34 2.87 42.55 6.1 73.17 8.38 3.47 5.45 7.23 11.25 11.3 17.4 16.25 24.61 28.69 41.76 38.11 53.71 7.84 9.94 17.47 14.91 27.09 14.91s19.25-4.97 27.09-14.91c9.42-11.95 21.85-29.1 38.11-53.71 4.07-6.16 7.82-11.95 11.3-17.4 30.63-2.28 58.83-5.51 73.18-8.38 43.6-8.46 85.75-48.29 95.38-91.77 5.48-26.4 10.87-62.31 10.95-111.34-.08-49.03-5.47-84.94-10.95-111.34-9.63-43.48-51.78-83.31-95.38-91.77C380.14 6.26 310.71 0 261.83 0c-1.98 0-3.92.01-5.83.03-1.9-.02-3.85-.03-5.83-.03z" fill="currentColor"/>
+            <path d="M284.28 363.63c-1.08 6.09-6.6 11.61-12.69 12.69-3.69.61-8.72 1.19-15.59 1.2-6.86 0-11.89-.58-15.59-1.2-6.09-1.08-11.61-6.6-12.69-12.69-.61-3.69-1.19-8.72-1.2-15.59 0-6.86.58-11.89 1.2-15.59 1.08-6.09 6.6-11.61 12.69-12.69 3.69-.61 8.72-1.19 15.59-1.2 6.86 0 11.89.58 15.59 1.2 6.09 1.08 11.61 6.6 12.69 12.69.61 3.69 1.19 8.72 1.2 15.59 0 6.86-.58 11.89-1.2 15.59zM254.96 288.4c-9.56 0-17.79-7.2-18.86-16.92-.14-1.32-1.31-13.27 2.36-27.59 5.23-20.39 17.53-35.92 35.57-44.88 33.02-16.42 35.58-34.98 35.58-40.28 0-3.96-1.56-12.6-7.39-19.85-7.82-9.71-21.36-14.63-40.25-14.63s-31.42 6.4-41.21 19.57c-7.32 9.84-9.65 19.74-9.67 19.83-2.17 10.27-12.25 16.83-22.52 14.65-10.27-2.17-16.83-12.26-14.65-22.52.38-1.81 4.1-18.16 16.35-34.64 11.84-15.92 33.89-34.9 71.71-34.9 67.75 0 85.65 47.41 85.65 72.47 0 13.87-5.52 48.88-56.66 74.3-19.56 9.72-17.11 34.04-17.08 34.28 1.15 10.43-6.37 19.82-16.8 20.97-.71.08-1.41.12-2.11.12z" fill="currentColor"/>
+          </svg>
+          <h3>Perguntaí</h3>
+          <p>Conectando estudantes através do conhecimento compartilhado.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Plataforma</h4>
+          <a href="#features">Recursos</a>
+          <a href="#loginSection">Login</a>
+          <a href="#loginSection">Cadastro</a>
+        </div>
+        <div class="footer-links">
+          <h4>Suporte</h4>
+          <a href="sobre.html">Central de Ajuda</a>
+          <a href="sobre.html#contactName">Contato</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Peruntaí. Todos os direitos reservados.</p>
+
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

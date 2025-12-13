@@ -4,39 +4,41 @@ import mongoose from "mongoose";
 import duvidasRoutes from "./routes/duvidas.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
-
-// Middleware
-app.use(cors({ origin: "*" }));
+app.use(cors());
 app.use(express.json());
-
-mongoose.connect("mongodb+srv://rodriguessavio68_db_user:savio497@cluster0.zwvuyto.mongodb.net/duvidasDB?retryWrites=true&w=majority&appName=Cluster0")
-  .then(() => console.log("MongoDB conectado"))
-  .catch(err => console.log(err));
-
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB conectado");
+    console.log(`DB name: ${mongoose.connection.name}`);
+  })
+  .catch((err) => {
+    console.error("❌ Erro ao conectar MongoDB:", err);
+  });
+
+app.use("/duvidas", duvidasRoutes);
+
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-
-app.use("/duvidas", duvidasRoutes);
-
-
-// Rotas do backend
-app.use("/duvidas", duvidasRoutes);
 app.get("/api", (req, res) => {
   res.json({ message: "Backend funcionando!" });
 });
 
+import authRoutes from "./routes/auth.js";
 
-app.get("/", (req, res) => {
-  res.send("Servidor está rodando 🚀");
-});
+app.use("/auth", authRoutes);
 
-
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
+
+// .....
