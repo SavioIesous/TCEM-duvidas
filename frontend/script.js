@@ -21,6 +21,10 @@ function logout() {
 
 let todasDuvidas = [];
 let currentFilter = "";
+let currentPage = 1;
+const itemsPerPage = 5;
+let feedbacks = [];
+let filterSemRespostas = false;
 
 async function validarToken(token) {
   if (!token) return false;
@@ -55,6 +59,51 @@ function updateStats() {
   if (statRespostas) statRespostas.textContent = totalRespostas;
 }
 
+function createReplyElement(r, duvidaId, loggedUserId, token) {
+  const li = document.createElement("li");
+  li.className = "reply";
+  li.dataset.replyId = r._id || r.id;
+  
+  const autor = escapeHtml(r.author || "alguém");
+  const texto = escapeHtml(r.text || "");
+  const criado = r.createdAt ? new Date(r.createdAt).toLocaleString("pt-BR") : "";
+  
+  li.innerHTML = `<strong>${autor}:</strong> ${texto}${criado ? ` <small>— ${criado}</small>` : ""}`;
+  
+  const rAuthorId = r.authorId || r.author_id;
+  if (rAuthorId && loggedUserId && String(rAuthorId) === String(loggedUserId)) {
+    const delReplyBtn = document.createElement("button");
+    delReplyBtn.textContent = "Excluir resposta";
+    delReplyBtn.className = "delete-reply-btn";
+    delReplyBtn.addEventListener("click", async () => {
+      if (!confirm("Deseja excluir esta resposta?")) return;
+      try {
+        const replyId = r._id || r.id;
+        const res = await fetch(`${API}/duvidas/${duvidaId}/respostas/${replyId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          li.remove();
+          const duvida = todasDuvidas.find(dv => (dv._id || dv.id) === duvidaId);
+          if (duvida) {
+            duvida.replies = duvida.replies.filter(rp => (rp._id || rp.id) !== replyId);
+            updateStats();
+          }
+        } else {
+          alert("Erro ao excluir resposta");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erro de conexão");
+      }
+    });
+    li.appendChild(delReplyBtn);
+  }
+  
+  return li;
+}
+
 function createDuvidaElement(d) {
   const id = d._id || d.id;
   const title = d.title || "";
@@ -62,8 +111,6 @@ function createDuvidaElement(d) {
   const author = d.author || "Anônimo";
   const createdAt = d.createdAt ? new Date(d.createdAt).toLocaleString("pt-BR") : "";
   const tag = d.tag || "";
-
-  console.log("Criando elemento para dúvida:", { id, title, tag }); // DEBUG
 
   const wrapper = document.createElement("div");
   wrapper.className = "duvida-card";
@@ -104,6 +151,7 @@ function createDuvidaElement(d) {
           wrapper.remove();
           todasDuvidas = todasDuvidas.filter(dv => (dv._id || dv.id) !== id);
           updateStats();
+          renderDuvidasFiltradas();
         } else {
           alert("Erro ao excluir dúvida");
         }
@@ -118,50 +166,37 @@ function createDuvidaElement(d) {
   const repliesList = wrapper.querySelector(".replies");
   const replies = d.replies || [];
   
-  replies.forEach((r) => {
-    const li = document.createElement("li");
-    li.className = "reply";
-    li.dataset.replyId = r._id || r.id;
-    
-    const autor = escapeHtml(r.author || "alguém");
-    const texto = escapeHtml(r.text || "");
-    const criado = r.createdAt ? new Date(r.createdAt).toLocaleString("pt-BR") : "";
-    
-    li.innerHTML = `<strong>${autor}:</strong> ${texto}${criado ? ` <small>— ${criado}</small>` : ""}`;
-    
-    const rAuthorId = r.authorId || r.author_id;
-    if (rAuthorId && loggedUserId && String(rAuthorId) === String(loggedUserId)) {
-      const delReplyBtn = document.createElement("button");
-      delReplyBtn.textContent = "Excluir resposta";
-      delReplyBtn.className = "delete-reply-btn";
-      delReplyBtn.addEventListener("click", async () => {
-        if (!confirm("Deseja excluir esta resposta?")) return;
-        try {
-          const replyId = r._id || r.id;
-          const res = await fetch(`${API}/duvidas/${id}/respostas/${replyId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            li.remove();
-            const duvida = todasDuvidas.find(dv => (dv._id || dv.id) === id);
-            if (duvida) {
-              duvida.replies = duvida.replies.filter(rp => (rp._id || rp.id) !== replyId);
-              updateStats();
-            }
-          } else {
-            alert("Erro ao excluir resposta");
-          }
-        } catch (err) {
-          console.error(err);
-          alert("Erro de conexão");
-        }
-      });
-      li.appendChild(delReplyBtn);
-    }
-    
-    repliesList.appendChild(li);
+  // Mostrar apenas as 3 primeiras respostas
+  const maxVisible = 3;
+  const visibleReplies = replies.slice(0, maxVisible);
+  const hiddenReplies = replies.slice(maxVisible);
+  
+  visibleReplies.forEach((r) => {
+    repliesList.appendChild(createReplyElement(r, id, loggedUserId, token));
   });
+  
+  // Container para respostas ocultas
+  const hiddenContainer = document.createElement("div");
+  hiddenContainer.className = "hidden-replies";
+  hiddenContainer.style.display = "none";
+  repliesList.appendChild(hiddenContainer);
+  
+  hiddenReplies.forEach((r) => {
+    hiddenContainer.appendChild(createReplyElement(r, id, loggedUserId, token));
+  });
+  
+  // Botão "Ver mais respostas" - só aparece se tiver mais de 3 respostas
+  if (hiddenReplies.length > 0) {
+    const showMoreBtn = document.createElement("button");
+    showMoreBtn.className = "btn-show-more-replies";
+    showMoreBtn.textContent = `Ver mais ${hiddenReplies.length} resposta(s)`;
+    showMoreBtn.addEventListener("click", () => {
+      const isHidden = hiddenContainer.style.display === "none";
+      hiddenContainer.style.display = isHidden ? "block" : "none";
+      showMoreBtn.textContent = isHidden ? "Ocultar respostas" : `Ver mais ${hiddenReplies.length} resposta(s)`;
+    });
+    wrapper.insertBefore(showMoreBtn, wrapper.querySelector(".reply-area"));
+  }
 
   const replyBtn = wrapper.querySelector(".reply-btn");
   replyBtn.addEventListener("click", async () => {
@@ -181,48 +216,8 @@ function createDuvidaElement(d) {
 
       if (res.ok) {
         const saved = await res.json();
-        const li = document.createElement("li");
-        li.className = "reply";
-        li.dataset.replyId = saved._id || saved.id;
-        
-        const autor = escapeHtml(saved.author || "Você");
-        const textoEscaped = escapeHtml(saved.text || texto);
-        const criado = saved.createdAt ? new Date(saved.createdAt).toLocaleString("pt-BR") : "";
-        
-        li.innerHTML = `<strong>${autor}:</strong> ${textoEscaped}${criado ? ` <small>— ${criado}</small>` : ""}`;
-        
-        const savedAuthorId = saved.authorId || saved.author_id;
-        if (savedAuthorId && loggedUserId && String(savedAuthorId) === String(loggedUserId)) {
-          const delReplyBtn = document.createElement("button");
-          delReplyBtn.textContent = "Excluir resposta";
-          delReplyBtn.className = "delete-reply-btn";
-          delReplyBtn.addEventListener("click", async () => {
-            if (!confirm("Deseja excluir esta resposta?")) return;
-            try {
-              const replyId = saved._id || saved.id;
-              const res = await fetch(`${API}/duvidas/${id}/respostas/${replyId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${getToken()}` },
-              });
-              if (res.ok) {
-                li.remove();
-                const duvida = todasDuvidas.find(dv => (dv._id || dv.id) === id);
-                if (duvida) {
-                  duvida.replies = duvida.replies.filter(rp => (rp._id || rp.id) !== replyId);
-                  updateStats();
-                }
-              } else {
-                alert("Erro ao excluir resposta");
-              }
-            } catch (err) {
-              console.error(err);
-              alert("Erro de conexão");
-            }
-          });
-          li.appendChild(delReplyBtn);
-        }
-        
-        repliesList.appendChild(li);
+        const li = createReplyElement(saved, id, loggedUserId, token);
+        repliesList.insertBefore(li, hiddenContainer);
         textEl.value = "";
         
         const duvida = todasDuvidas.find(dv => (dv._id || dv.id) === id);
@@ -245,7 +240,6 @@ function createDuvidaElement(d) {
     tagBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       const tagText = tagBtn.dataset.tag;
-      console.log("Tag clicada na dúvida:", tagText); // DEBUG
       filtrarPorTag(tagText);
     });
   }
@@ -267,8 +261,8 @@ async function carregarDuvidas() {
     }
     const list = await res.json();
     todasDuvidas = Array.isArray(list) ? list : [];
-    console.log("Dúvidas carregadas:", todasDuvidas);
-    renderDuvidas();
+    currentPage = 1;
+    renderDuvidasFiltradas();
     updateStats();
   } catch (err) {
     console.error("Erro ao carregar dúvidas:", err);
@@ -281,15 +275,11 @@ function renderDuvidas() {
 }
 
 function filtrarPorTag(tagText) {
-  console.log("Filtrando por tag:", tagText);
   currentFilter = tagText;
+  currentPage = 1;
   
   document.querySelectorAll(".sidebar .tag").forEach(t => {
-    if (t.dataset.tag === tagText) {
-      t.classList.add("active");
-    } else {
-      t.classList.remove("active");
-    }
+    t.dataset.tag === tagText ? t.classList.add("active") : t.classList.remove("active");
   });
   
   const filterInfo = document.getElementById("filterInfo");
@@ -299,22 +289,18 @@ function filtrarPorTag(tagText) {
     filterInfo.textContent = `Filtrando: ${tagText}`;
     filterInfo.style.display = "block";
   }
+  if (btnClear) btnClear.style.display = "block";
   
-  if (btnClear) {
-    btnClear.style.display = "block";
-  }
-  
-  renderDuvidas();
+  renderDuvidasFiltradas();
   document.getElementById("duvidas")?.scrollIntoView({ behavior: "smooth" });
 }
 
 function limparFiltro() {
   currentFilter = "";
   filterSemRespostas = false;
+  currentPage = 1;
   
-  document.querySelectorAll(".sidebar .tag").forEach(t => {
-    t.classList.remove("active");
-  });
+  document.querySelectorAll(".sidebar .tag").forEach(t => t.classList.remove("active"));
   
   const btnSemRespostas = document.getElementById("btnSemRespostas");
   if (btnSemRespostas) btnSemRespostas.classList.remove("active");
@@ -325,13 +311,124 @@ function limparFiltro() {
   if (filterInfo) filterInfo.style.display = "none";
   if (btnClear) btnClear.style.display = "none";
   
-  renderDuvidas();
+  renderDuvidasFiltradas();
+}
+
+function filtrarSemRespostas() {
+  filterSemRespostas = !filterSemRespostas;
+  currentPage = 1;
+  
+  const btnSemRespostas = document.getElementById("btnSemRespostas");
+  const filterInfo = document.getElementById("filterInfo");
+  const btnClear = document.getElementById("btnClearFilter");
+  
+  if (filterSemRespostas) {
+    if (btnSemRespostas) btnSemRespostas.classList.add("active");
+    if (filterInfo) {
+      filterInfo.textContent = "Filtrando: Sem Respostas";
+      filterInfo.style.display = "block";
+    }
+    if (btnClear) btnClear.style.display = "block";
+  } else {
+    if (btnSemRespostas) btnSemRespostas.classList.remove("active");
+    if (filterInfo && !currentFilter) filterInfo.style.display = "none";
+    if (btnClear && !currentFilter) btnClear.style.display = "none";
+  }
+  
+  renderDuvidasFiltradas();
+}
+
+function renderDuvidasFiltradas() {
+  const container = document.getElementById("duvidas");
+  if (!container) return;
+  
+  container.innerHTML = "";
+
+  let filtered = todasDuvidas;
+  
+  if (currentFilter) {
+    filtered = filtered.filter(d => (d.tag || "").toString().trim() === currentFilter);
+  }
+  
+  if (filterSemRespostas) {
+    filtered = filtered.filter(d => (d.replies || []).length === 0);
+  }
+
+  if (!filtered.length) {
+    container.innerHTML = '<p class="small-muted">Nenhuma dúvida encontrada.</p>';
+    const paginationContainer = document.getElementById("pagination");
+    if (paginationContainer) paginationContainer.innerHTML = "";
+    return;
+  }
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+  
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+  paginatedItems.forEach(d => container.appendChild(createDuvidaElement(d)));
+  renderPagination(filtered.length);
+}
+
+function renderPagination(totalItems) {
+  const paginationContainer = document.getElementById("pagination");
+  if (!paginationContainer) return;
+  
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = "";
+    return;
+  }
+  
+  paginationContainer.innerHTML = "";
+  
+  const paginationDiv = document.createElement("div");
+  paginationDiv.className = "pagination";
+  
+  if (currentPage > 1) {
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "pagination-btn";
+    prevBtn.textContent = "← Anterior";
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+    paginationDiv.appendChild(prevBtn);
+  }
+  
+  const numbersDiv = document.createElement("div");
+  numbersDiv.className = "pagination-numbers";
+  
+  for (let i = 1; i <= totalPages; i++) {
+    const pageBtn = document.createElement("button");
+    pageBtn.className = "pagination-num" + (i === currentPage ? " active" : "");
+    pageBtn.textContent = i;
+    if (i !== currentPage) pageBtn.addEventListener("click", () => goToPage(i));
+    numbersDiv.appendChild(pageBtn);
+  }
+  
+  paginationDiv.appendChild(numbersDiv);
+  
+  if (currentPage < totalPages) {
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "pagination-btn";
+    nextBtn.textContent = "Próxima →";
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+    paginationDiv.appendChild(nextBtn);
+  }
+  
+  paginationContainer.appendChild(paginationDiv);
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderDuvidasFiltradas();
+  document.getElementById("duvidas")?.scrollIntoView({ behavior: "smooth" });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   const path = window.location.pathname;
 
-    // Toggle de mostrar/esconder senha
   document.querySelectorAll(".password-toggle").forEach((btn) => {
     btn.addEventListener("click", () => {
       const targetId = btn.dataset.target;
@@ -341,21 +438,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const isPassword = input.type === "password";
       input.type = isPassword ? "text" : "password";
       
-      // Atualiza o ícone
-      const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>`;
-      const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>`;
+      const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
       
       btn.innerHTML = isPassword ? eyeClosed : eyeOpen;
-      btn.setAttribute("aria-label", isPassword ? "Esconder senha" : "Mostrar senha");
     });
   });
-
 
   if (path.includes("index.html") || path === "/" || path.endsWith("/")) {
     const loginForm = document.getElementById("loginForm");
@@ -366,17 +454,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       tab.addEventListener("click", () => {
         tabs.forEach((t) => t.classList.remove("active"));
         tab.classList.add("active");
-
-        const tabName = tab.dataset.tab;
-        document.querySelectorAll(".auth-form").forEach((form) => {
-          form.classList.remove("active");
-        });
-
-        if (tabName === "login") {
-          loginForm.classList.add("active");
-        } else {
-          registerForm.classList.add("active");
-        }
+        document.querySelectorAll(".auth-form").forEach((form) => form.classList.remove("active"));
+        (tab.dataset.tab === "login" ? loginForm : registerForm).classList.add("active");
       });
     });
 
@@ -434,7 +513,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
     }
-
     return;
   }
 
@@ -448,25 +526,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const btnLogout = document.getElementById("btnLogout");
-    if (btnLogout) {
-      btnLogout.addEventListener("click", logout);
-    }
+    document.getElementById("btnLogout")?.addEventListener("click", logout);
 
     const btnFazerPergunta = document.getElementById("btnFazerPergunta");
     const postArea = document.querySelector(".post-area");
     
     if (btnFazerPergunta && postArea) {
       btnFazerPergunta.addEventListener("click", () => {
-       const isHidden = postArea.style.display === "none";
+        const isHidden = postArea.style.display === "none";
         postArea.style.display = isHidden ? "block" : "none";
-        
-        // Auto-scroll para a área de postar dúvida em mobile
-        if (isHidden) {
-          setTimeout(() => {
-            postArea.scrollIntoView({ behavior: "smooth", block: "start" });
-          }, 100);
-        }
+        if (isHidden) setTimeout(() => postArea.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
       });
     }
 
@@ -487,23 +556,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
           const res = await fetch(`${API}/duvidas`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ title, description, tag }),
           });
 
           if (res.ok) {
             const data = await res.json();
-            console.log("Dúvida criada:", data);
             todasDuvidas.unshift(data);
-            renderDuvidas();
+            currentPage = 1;
+            renderDuvidasFiltradas();
             updateStats();
-            
             formDuvida.reset();
             if (postArea) postArea.style.display = "none";
-            
             alert("Dúvida postada com sucesso!");
           } else {
             const err = await res.json();
@@ -516,32 +580,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    const sidebarTags = document.querySelectorAll(".sidebar .tag");
-    console.log("Tags da sidebar encontradas:", sidebarTags.length); // DEBUG
-    sidebarTags.forEach((tag) => {
+    document.querySelectorAll(".sidebar .tag").forEach((tag) => {
       tag.addEventListener("click", () => {
-        const tagText = tag.dataset.tag;
-        console.log("Tag da sidebar clicada:", tagText); // DEBUG
-        filtrarPorTag(tagText);
-        
+        filtrarPorTag(tag.dataset.tag);
         if (postArea) {
           postArea.style.display = "block";
           const tagSelect = document.getElementById("tag");
-          if (tagSelect) tagSelect.value = tagText;
+          if (tagSelect) tagSelect.value = tag.dataset.tag;
         }
       });
     });
 
-    const btnClearFilter = document.getElementById("btnClearFilter");
-    if (btnClearFilter) {
-      btnClearFilter.addEventListener("click", limparFiltro);
-    }
+    document.getElementById("btnClearFilter")?.addEventListener("click", limparFiltro);
+    document.getElementById("btnSemRespostas")?.addEventListener("click", filtrarSemRespostas);
 
     const searchInput = document.getElementById("searchInput");
     if (searchInput) {
       searchInput.addEventListener("input", (e) => {
         const query = e.target.value.toLowerCase().trim();
+        if (!query) { renderDuvidasFiltradas(); return; }
+
         const container = document.getElementById("duvidas");
+        const paginationContainer = document.getElementById("pagination");
         if (!container) return;
 
         const filtered = todasDuvidas.filter((d) => {
@@ -552,218 +612,81 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         container.innerHTML = "";
+        if (paginationContainer) paginationContainer.innerHTML = "";
         
         if (!filtered.length) {
           container.innerHTML = '<p class="small-muted">Nenhuma dúvida encontrada.</p>';
           return;
         }
 
-        filtered.forEach((d) => {
-          const el = createDuvidaElement(d);
-          container.appendChild(el);
-        });
+        filtered.forEach((d) => container.appendChild(createDuvidaElement(d)));
       });
     }
 
-    // Botão de filtrar sem respostas
-    const btnSemRespostas = document.getElementById("btnSemRespostas");
-    if (btnSemRespostas) {
-      btnSemRespostas.addEventListener("click", filtrarSemRespostas);
-    }
-
-    // Modal de perfil
-    const btnProfile = document.getElementById("btnProfile");
+    // Modais
     const profileModal = document.getElementById("profileModal");
-    const closeProfile = document.getElementById("closeProfile");
-    const formProfile = document.getElementById("formProfile");
-
-    if (btnProfile && profileModal) {
-      btnProfile.addEventListener("click", async () => {
-        profileModal.style.display = "flex";
-        await carregarDadosPerfil();
-      });
-    }
-
-    if (closeProfile && profileModal) {
-      closeProfile.addEventListener("click", () => {
-        profileModal.style.display = "none";
-      });
-    }
-
-    if (formProfile) {
-      formProfile.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        await atualizarPerfil();
-      });
-    }
-
-    // Modal de notificações
-    const btnNotifications = document.getElementById("btnNotifications");
     const notificationsModal = document.getElementById("notificationsModal");
-    const closeNotifications = document.getElementById("closeNotifications");
+    
+    document.getElementById("btnProfile")?.addEventListener("click", async () => {
+      profileModal.style.display = "flex";
+      await carregarDadosPerfil();
+    });
+    document.getElementById("closeProfile")?.addEventListener("click", () => profileModal.style.display = "none");
+    document.getElementById("formProfile")?.addEventListener("submit", async (e) => { e.preventDefault(); await atualizarPerfil(); });
 
-    if (btnNotifications && notificationsModal) {
-      btnNotifications.addEventListener("click", async () => {
-        notificationsModal.style.display = "flex";
-        await carregarNotificacoes();
-      });
-    }
+    document.getElementById("btnNotifications")?.addEventListener("click", async () => {
+      notificationsModal.style.display = "flex";
+      await carregarNotificacoes();
+    });
+    document.getElementById("closeNotifications")?.addEventListener("click", () => notificationsModal.style.display = "none");
 
-    if (closeNotifications && notificationsModal) {
-      closeNotifications.addEventListener("click", () => {
-        notificationsModal.style.display = "none";
-      });
-    }
-
-    // Fechar modais clicando fora
     window.addEventListener("click", (e) => {
-      if (e.target === profileModal) {
-        profileModal.style.display = "none";
-      }
-      if (e.target === notificationsModal) {
-        notificationsModal.style.display = "none";
-      }
+      if (e.target === profileModal) profileModal.style.display = "none";
+      if (e.target === notificationsModal) notificationsModal.style.display = "none";
     });
 
-    // Mobile Menu Toggle
+    // Mobile Menu
     const mobileMenuToggle = document.getElementById("mobileMenuToggle");
     const mobileMenu = document.getElementById("mobileMenu");
     
     if (mobileMenuToggle && mobileMenu) {
-      mobileMenuToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        mobileMenu.classList.toggle("active");
-      });
-      
-      // Fechar menu mobile ao clicar fora
+      mobileMenuToggle.addEventListener("click", (e) => { e.stopPropagation(); mobileMenu.classList.toggle("active"); });
       document.addEventListener("click", (e) => {
-        if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-          mobileMenu.classList.remove("active");
-        }
+        if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) mobileMenu.classList.remove("active");
       });
     }
 
-    // Mobile Menu - Notificações
-    const btnNotificationsMobile = document.getElementById("btnNotificationsMobile");
-    if (btnNotificationsMobile && notificationsModal) {
-      btnNotificationsMobile.addEventListener("click", async () => {
-        notificationsModal.style.display = "flex";
-        await carregarNotificacoes();
-        if (mobileMenu) mobileMenu.classList.remove("active");
-      });
-    }
+    document.getElementById("btnNotificationsMobile")?.addEventListener("click", async () => {
+      notificationsModal.style.display = "flex";
+      await carregarNotificacoes();
+      mobileMenu?.classList.remove("active");
+    });
+    document.getElementById("btnProfileMobile")?.addEventListener("click", async () => {
+      profileModal.style.display = "flex";
+      await carregarDadosPerfil();
+      mobileMenu?.classList.remove("active");
+    });
+    document.getElementById("btnLogoutMobile")?.addEventListener("click", () => { mobileMenu?.classList.remove("active"); logout(); });
 
-    // Mobile Menu - Perfil
-    const btnProfileMobile = document.getElementById("btnProfileMobile");
-    if (btnProfileMobile && profileModal) {
-      btnProfileMobile.addEventListener("click", async () => {
-        profileModal.style.display = "flex";
-        await carregarDadosPerfil();
-        if (mobileMenu) mobileMenu.classList.remove("active");
-      });
-    }
-
-    // Mobile Menu - Logout
-    const btnLogoutMobile = document.getElementById("btnLogoutMobile");
-    if (btnLogoutMobile) {
-      btnLogoutMobile.addEventListener("click", () => {
-        if (mobileMenu) mobileMenu.classList.remove("active");
-        logout();
-      });
-    }
-
-
-    // Carregar dúvidas e atualizar badge de notificações
     await carregarDuvidas();
     await atualizarBadgeNotificacoes();
-    
-    // Atualizar notificações a cada 30 segundos
     setInterval(atualizarBadgeNotificacoes, 30000);
   }
 });
 
-// Filtrar dúvidas sem respostas
-let filterSemRespostas = false;
-
-function filtrarSemRespostas() {
-  filterSemRespostas = !filterSemRespostas;
-  
-  const btnSemRespostas = document.getElementById("btnSemRespostas");
-  const filterInfo = document.getElementById("filterInfo");
-  const btnClear = document.getElementById("btnClearFilter");
-  
-  if (filterSemRespostas) {
-    if (btnSemRespostas) btnSemRespostas.classList.add("active");
-    if (filterInfo) {
-      filterInfo.textContent = "Filtrando: Sem Respostas";
-      filterInfo.style.display = "block";
-    }
-    if (btnClear) btnClear.style.display = "block";
-  } else {
-    if (btnSemRespostas) btnSemRespostas.classList.remove("active");
-    if (filterInfo && !currentFilter) filterInfo.style.display = "none";
-    if (btnClear && !currentFilter) btnClear.style.display = "none";
-  }
-  
-  renderDuvidasFiltradas();
-}
-
-function renderDuvidasFiltradas() {
-  const container = document.getElementById("duvidas");
-  if (!container) return;
-  
-  container.innerHTML = "";
-
-  let filtered = todasDuvidas;
-  
-  // Aplicar filtro de tag
-  if (currentFilter) {
-    filtered = filtered.filter((d) => {
-      const duvidaTag = (d.tag || "").toString().trim();
-      return duvidaTag === currentFilter;
-    });
-  }
-  
-  // Aplicar filtro sem respostas
-  if (filterSemRespostas) {
-    filtered = filtered.filter((d) => {
-      const replies = d.replies || [];
-      return replies.length === 0;
-    });
-  }
-
-  if (!filtered.length) {
-    container.innerHTML = '<p class="small-muted">Nenhuma dúvida encontrada.</p>';
-    return;
-  }
-
-  filtered.forEach((d) => {
-    const el = createDuvidaElement(d);
-    container.appendChild(el);
-  });
-}
-
-// Carregar dados do perfil
 async function carregarDadosPerfil() {
   const token = getToken();
   if (!token) return;
-  
   try {
-    const res = await fetch(`${API}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    
+    const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
       const user = await res.json();
       document.getElementById("profileName").value = user.name || "";
       document.getElementById("profileEmail").value = user.email || "";
     }
-  } catch (err) {
-    console.error("Erro ao carregar perfil:", err);
-  }
+  } catch (err) { console.error("Erro ao carregar perfil:", err); }
 }
 
-// Atualizar perfil
 async function atualizarPerfil() {
   const token = getToken();
   if (!token) return;
@@ -771,10 +694,7 @@ async function atualizarPerfil() {
   const name = document.getElementById("profileName").value.trim();
   const senha = document.getElementById("profileSenha").value.trim();
   
-  if (!name) {
-    alert("Nome é obrigatório!");
-    return;
-  }
+  if (!name) { alert("Nome é obrigatório!"); return; }
   
   const body = { name };
   if (senha) body.senha = senha;
@@ -782,29 +702,18 @@ async function atualizarPerfil() {
   try {
     const res = await fetch(`${API}/auth/profile`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(body)
     });
-    
     const data = await res.json();
-    
     if (res.ok) {
       alert("Perfil atualizado com sucesso!");
       document.getElementById("profileModal").style.display = "none";
       document.getElementById("profileSenha").value = "";
-    } else {
-      alert(data.error || "Erro ao atualizar perfil");
-    }
-  } catch (err) {
-    console.error("Erro:", err);
-    alert("Erro de conexão");
-  }
+    } else { alert(data.error || "Erro ao atualizar perfil"); }
+  } catch (err) { console.error("Erro:", err); alert("Erro de conexão"); }
 }
 
-// Carregar notificações
 async function carregarNotificacoes() {
   const token = getToken();
   if (!token) return;
@@ -815,80 +724,41 @@ async function carregarNotificacoes() {
   lista.innerHTML = '<p class="small-muted">Carregando...</p>';
   
   try {
-    const res = await fetch(`${API}/auth/notifications`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    
+    const res = await fetch(`${API}/auth/notifications`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
       const notifications = await res.json();
-      
       if (!notifications || notifications.length === 0) {
         lista.innerHTML = '<p class="small-muted">Nenhuma notificação nova.</p>';
         return;
       }
-      
       lista.innerHTML = "";
-      
       notifications.forEach(notif => {
         const div = document.createElement("div");
         div.className = "notification-item";
-        div.innerHTML = `
-          <p><strong>${notif.authorName || "Alguém"}</strong> respondeu sua dúvida: <strong>"${notif.duvidaTitle}"</strong></p>
-          <small>${new Date(notif.createdAt).toLocaleString("pt-BR")}</small>
-        `;
+        div.innerHTML = `<p><strong>${notif.authorName || "Alguém"}</strong> respondeu sua dúvida: <strong>"${notif.duvidaTitle}"</strong></p><small>${new Date(notif.createdAt).toLocaleString("pt-BR")}</small>`;
         lista.appendChild(div);
       });
-      
-      // Marcar como lidas
-      await fetch(`${API}/auth/notifications/mark-read`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      await fetch(`${API}/auth/notifications/mark-read`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       await atualizarBadgeNotificacoes();
-    } else {
-      lista.innerHTML = '<p class="small-muted">Erro ao carregar notificações.</p>';
-    }
-  } catch (err) {
-    console.error("Erro:", err);
-    lista.innerHTML = '<p class="small-muted">Erro de conexão.</p>';
-  }
+    } else { lista.innerHTML = '<p class="small-muted">Erro ao carregar notificações.</p>'; }
+  } catch (err) { console.error("Erro:", err); lista.innerHTML = '<p class="small-muted">Erro de conexão.</p>'; }
 }
 
-// Atualizar badge de notificações
 async function atualizarBadgeNotificacoes() {
   const token = getToken();
   if (!token) return;
-  
   try {
-    const res = await fetch(`${API}/auth/notifications/count`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    
+    const res = await fetch(`${API}/auth/notifications/count`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
       const data = await res.json();
       const badge = document.getElementById("notificationBadge");
       const badgeMobile = document.getElementById("notificationBadgeMobile");
-      
-      if (badge) {
-        if (data.count > 0) {
-          badge.textContent = data.count;
-          badge.style.display = "block";
-        } else {
-          badge.style.display = "none";
-          }
-      }
-      
-      if (badgeMobile) {
-        if (data.count > 0) {
-          badgeMobile.textContent = data.count;
-          badgeMobile.style.display = "block";
-        } else {
-          badgeMobile.style.display = "none";
+      [badge, badgeMobile].forEach(b => {
+        if (b) {
+          b.textContent = data.count;
+          b.style.display = data.count > 0 ? "block" : "none";
         }
-      }
+      });
     }
-  } catch (err) {
-    console.error("Erro ao atualizar badge:", err);
-  }
+  } catch (err) { console.error("Erro ao atualizar badge:", err); }
 }
